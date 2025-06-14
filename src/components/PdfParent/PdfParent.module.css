@@ -1,0 +1,373 @@
+.parentContainer {
+  width: 100vw;
+  min-height: 100vh;
+  background: #0a1026;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.tabs {
+  display: flex;
+  margin-top: 32px;
+  margin-bottom: 24px;
+  background: transparent;
+  border-bottom: 2px solid #232a47;
+  width: 100%;
+  justify-content: center;
+}
+.tabs button {
+  background: none;
+  color: #bfc7d5;
+  border: none;
+  padding: 16px 48px;
+  font-size: 1.15rem;
+  cursor: pointer;
+  border-radius: 16px 16px 0 0;
+  margin: 0 8px;
+  outline: none;
+  font-weight: 600;
+  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+  position: relative;
+  top: 2px;
+  box-shadow: none;
+  letter-spacing: 0.5px;
+}
+.tabs button:hover {
+  color: #fff;
+  background: #232a47;
+}
+.activeTab {
+  background: #232a47;
+  color: #fff;
+  box-shadow: 0 4px 24px rgba(60,140,231,0.10);
+  border-bottom: 2px solid #7b5cff;
+  z-index: 1;
+}
+.tabContent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.uploadForm {
+  background: #181e36;
+  border-radius: 24px;
+  box-shadow: 0 2px 24px rgba(10,16,38,0.18);
+  padding: 56px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 400px;
+  margin-top: 80px;
+}
+.formGroup {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+.formGroup label {
+  color: #bfc7d5;
+  font-size: 1.1rem;
+}
+.formGroup input {
+  padding: 8px 12px;
+  border: 1px solid #c2c8d4;
+  border-radius: 6px;
+  font-size: 1rem;
+  width: 250px;
+}
+.submitBtn {
+  background: linear-gradient(90deg, #7b5cff 0%, #3c8ce7 100%);
+  color: #fff;
+  border: none;
+  padding: 14px 36px;
+  border-radius: 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: background 0.2s;
+}
+.submitBtn:hover {
+  background: linear-gradient(90deg, #3c8ce7 0%, #7b5cff 100%);
+}
+.splitContainer {
+  display: flex;
+  width: 100%;
+  height: 80vh;
+  margin-top: 32px;
+  box-shadow: 0 2px 24px rgba(10,16,38,0.18);
+  border-radius: 24px;
+  overflow: hidden;
+  background: #181e36;
+  align-items: stretch; /* Ensure both modals are always the same height */
+}
+.leftModal {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #181e36;
+  border-right: 2px solid #232a47;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  width: 0;
+  max-width: 100%;
+  height: 100%; /* Always match parent height */
+}
+.rightModal {
+  flex: 1 1 0;
+  background: #0a1026;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px;
+  min-width: 0;
+  width: 0;
+  max-width: 100%;
+  height: 100%; /* Always match parent height */
+  overflow-y: auto;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+/* Custom scrollbar for right modal */
+.rightModal::-webkit-scrollbar {
+  width: 10px;
+}
+.rightModal::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #7b5cff 0%, #3c8ce7 100%);
+  border-radius: 8px;
+}
+.rightModal::-webkit-scrollbar-track {
+  background: #181e36;
+  border-radius: 8px;
+}
+
+/* For Firefox */
+.rightModal {
+  scrollbar-width: thin;
+  scrollbar-color: #7b5cff #181e36;
+}
+
+.pdfContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 700px;
+  height: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
+}
+
+.pdfNavOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  height: 0;
+  padding: 0 10px;
+}
+
+.pdfNavButton {
+  background: #3c8ce7;
+  color: #fff;
+  opacity: 0.5;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  max-width: 36px;
+  max-height: 36px;
+  font-size: 1.2rem;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity 0.2s, background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(60,140,231,0.10);
+  padding: 0;
+  line-height: 1;
+}
+.pdfNavButton:disabled {
+  opacity: 0.15;
+  cursor: not-allowed;
+}
+.pdfNavButton:hover:not(:disabled) {
+  opacity: 0.8;
+  background: #7b5cff;
+  box-shadow: 0 4px 16px rgba(123,92,255,0.18);
+}
+
+.controls {
+  display: none;
+}
+.wip {
+  font-size: 2rem;
+  color: #7b5cff;
+  font-weight: 700;
+}
+.iterTab {
+  margin-top: 64px;
+  font-size: 1.5rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.customFileInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+.customFileInput {
+  opacity: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 180px;
+  height: 44px;
+  cursor: pointer;
+  z-index: 2;
+}
+.customFileLabel {
+  display: inline-block;
+  background: linear-gradient(90deg, #7b5cff 0%, #3c8ce7 100%);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 24px;
+  padding: 12px 32px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(60,140,231,0.10);
+  border: none;
+  outline: none;
+  margin-right: 16px;
+}
+.customFileLabel:hover {
+  background: linear-gradient(90deg, #3c8ce7 0%, #7b5cff 100%);
+}
+.selectedFileName {
+  color: #bfc7d5;
+  font-size: 0.98rem;
+  margin-left: 8px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resultTable {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+  background: #181e36;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'monospace', 'Inter', 'Segoe UI', Arial, sans-serif;
+  font-size: 1.04rem;
+  letter-spacing: 0.01em;
+  min-width: 420px;
+  width: max-content;
+}
+.resultTable th, .resultTable td {
+  border: 1px solid #232a47;
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 1rem;
+}
+.resultTable th {
+  background: #232a47;
+  color: #bfc7d5;
+  font-weight: 700;
+  min-width: 160px;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.resultTable th:hover {
+  color: #fff;
+}
+.resultTable tr {
+  transition: background 0.18s;
+}
+.resultTable tr:hover {
+  background: #2d3a5a;
+  color: #fff;
+}
+.resultTable tr:hover th {
+  background: #3c8ce7;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(60,140,231,0.18);
+  border-radius: 6px 0 0 6px;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+}
+.expandBtn {
+  background: none;
+  color: #7b5cff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-left: 8px;
+  text-decoration: underline;
+  padding: 0 8px;
+  border-radius: 6px;
+  transition: background 0.18s, color 0.18s;
+  outline: none;
+  position: relative;
+  z-index: 1;
+}
+.expandBtn:hover, .expandBtn:focus {
+  background: #232a47;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(123,92,255,0.10);
+}
+.expandBtn:active {
+  background: #3c8ce7;
+  color: #fff;
+}
+.expandBtn:focus {
+  outline: 2px solid #7b5cff;
+  outline-offset: 2px;
+}
+.expandedContent {
+  margin-top: 8px;
+  background: #232a47;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.97rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

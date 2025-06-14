@@ -1,0 +1,19 @@
+.file_name {
+  width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 10px;
+  background-color: #27242b; /* theme blue */
+  color: #586cff; /* purple accent */
+  cursor: pointer;
+  border-radius: 10px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.file_name:hover {
+  background-color: #586cff; /* purple on hover */
+  color: #fff;
+}

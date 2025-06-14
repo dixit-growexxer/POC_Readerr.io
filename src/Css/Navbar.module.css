@@ -1,0 +1,21 @@
+.app_name_box {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  background: #192f68; /* primary blue */
+}
+
+.logo {
+  border-radius: 50%;
+}
+
+.brand_logo {
+  width: 100px;
+}
+
+.brandname {
+  color: #fff; /* white text */
+  font-weight: 700;
+  letter-spacing: 2px;
+}

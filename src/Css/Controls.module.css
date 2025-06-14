@@ -1,0 +1,50 @@
+.page_controls {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 30%;
+  background: #192f68; /* primary blue */
+  height: 50px;
+  color: #fff;
+  align-items: center;
+  justify-content: space-evenly;
+  border-radius: 8px;
+}
+
+.file_name {
+  width: 30%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  color: #586cff; /* purple accent */
+  font-weight: 600;
+}
+
+.tools {
+  width: 25%;
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+@media screen and (max-width: 600px) {
+  .page_controls {
+    width: 100%;
+  }
+  .file_name {
+    width: 100%;
+  }
+  .tools {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 600px) and (max-width: 992px) {
+  .page_controls {
+    width: 50%;
+  }
+  .file_name {
+    width: 50%;
+  }
+  .tools {
+    display: none;
+  }
+}
