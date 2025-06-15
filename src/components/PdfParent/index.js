@@ -31,6 +31,8 @@ const PdfParent = () => {
   const [iterationExpandAll, setIterationExpandAll] = useState(false);
   const iterationApiCalledRef = useRef({});
 
+  const fileInputRef = useRef(null);
+
   useEffect(() => {
     if (pdfContainerRef.current) {
       const containerHeight = pdfContainerRef.current.offsetHeight;
@@ -53,6 +55,26 @@ const PdfParent = () => {
     setSelectedFileName(f ? f.name : '');
   };
 
+  const handleRecentFileClick = (fileObj) => {
+    // Create a new File from the blob so the input can accept it
+    const newFile = new File([fileObj.blob], fileObj.name, { type: 'application/pdf' });
+    setFile(newFile);
+    setFileUrl(URL.createObjectURL(newFile));
+    setSelectedFileName(fileObj.name);
+    setShowSidebar(false);
+    setShowUpload(true);
+    setSubmitted(false);
+    setThreshold('');
+    setMaxIter('');
+    setResultData(null);
+    // Update the file input element using DataTransfer
+    if (fileInputRef.current) {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(newFile);
+      fileInputRef.current.files = dataTransfer.files;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (file && threshold && maxIter) {
@@ -60,6 +82,7 @@ const PdfParent = () => {
       setPageNumber(1);
       setShowUpload(false);
       setLoading(true);
+      setShowSidebar(false); // Ensure hamburger menu closes immediately on submit
       let apiResult = null;
       try {
         const res = await fetch('http://localhost:3001/upload_and_optimize');
@@ -70,11 +93,12 @@ const PdfParent = () => {
         setResultData(apiResult);
       }
       setLoading(false);
-      // Update recent files: remove if already exists, then add to front, and store result
+      // Update recent files: remove if already exists, then add to front, only store blob and name
       setRecentFiles(prev => {
         const filtered = prev.filter(fObj => fObj.name !== file.name);
-        return [{ name: file.name, url: fileUrl, result: apiResult }, ...filtered];
+        return [{ name: file.name, blob: file }, ...filtered];
       });
+      setShowSidebar(false); // Hide sidebar after submit
     }
   };
 
@@ -270,16 +294,7 @@ const PdfParent = () => {
     setThreshold('');
     setMaxIter('');
     setActiveTab('pdf'); // Ensure PDF tab is active after back
-  };
-
-  const handleRecentFileClick = (fileObj) => {
-    setFile({ name: fileObj.name });
-    setFileUrl(fileObj.url);
-    setSelectedFileName(fileObj.name);
-    setShowUpload(false);
-    setSubmitted(true);
-    setPageNumber(1);
-    setResultData(fileObj.result || null);
+    setIterationData(null); // Reset iteration data on back
   };
 
   useEffect(() => {
@@ -303,12 +318,19 @@ const PdfParent = () => {
           setIterationLoading(false);
         });
     }
-    // If we switch to a new doc_id, reset iteration data
-    if (resultData && resultData.doc_id && iterationData && iterationData.length > 0 && iterationData[0].doc_id !== resultData.doc_id) {
-      setIterationData(null);
-      setIterationExpandedCells({});
-    }
+    // Remove resetting iterationData based on doc_id
   }, [activeTab]);
+
+  // Reset iterationData on browser/tab close or refresh
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      setIterationData(null);
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   function renderIterationTable(data, parentKey = '') {
     if (!data) return null;
@@ -382,38 +404,40 @@ const PdfParent = () => {
   return (
     <div className={styles.parentContainer}>
       {/* Hamburger menu */}
-      <div style={{ position: 'absolute', top: 24, left: 24, zIndex: 10 }}>
-        <button
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-          onClick={() => setShowSidebar(s => !s)}
-          aria-label="Show recent files"
-        >
-          <span style={{ display: 'inline-block', width: 32, height: 32 }}>
-            <svg width="32" height="32" viewBox="0 0 32 32"><rect y="6" width="32" height="4" rx="2" fill="#7b5cff"/><rect y="14" width="32" height="4" rx="2" fill="#7b5cff"/><rect y="22" width="32" height="4" rx="2" fill="#7b5cff"/></svg>
-          </span>
-        </button>
-        {showSidebar && (
-          <div style={{ position: 'absolute', top: 40, left: 0, background: '#232a47', borderRadius: 12, boxShadow: '0 2px 16px rgba(60,140,231,0.18)', padding: 16, minWidth: 220, zIndex: 100 }}>
-            <div style={{ fontWeight: 700, color: '#fff', marginBottom: 12 }}>Recent Files</div>
-            {recentFiles.length === 0 ? (
-              <div style={{ color: '#bfc7d5', fontStyle: 'italic' }}>No recent files</div>
-            ) : (
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {recentFiles.map((fObj, idx) => (
-                  <li key={fObj.name} style={{ marginBottom: 8 }}>
-                    <button
-                      style={{ background: 'none', border: 'none', color: '#7b5cff', cursor: 'pointer', textAlign: 'left', fontWeight: 600, fontSize: '1rem', borderRadius: 6, padding: '4px 8px', width: '100%' }}
-                      onClick={() => { setShowSidebar(false); handleRecentFileClick(fObj); }}
-                    >
-                      {fObj.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </div>
+      {showUpload && (
+        <div style={{ position: 'absolute', top: 24, left: 24, zIndex: 10 }}>
+          <button
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            onClick={() => setShowSidebar(s => !s)}
+            aria-label="Show recent files"
+          >
+            <span style={{ display: 'inline-block', width: 32, height: 32 }}>
+              <svg width="32" height="32" viewBox="0 0 32 32"><rect y="6" width="32" height="4" rx="2" fill="#7b5cff"/><rect y="14" width="32" height="4" rx="2" fill="#7b5cff"/><rect y="22" width="32" height="4" rx="2" fill="#7b5cff"/></svg>
+            </span>
+          </button>
+          {showSidebar && (
+            <div style={{ position: 'absolute', top: 40, left: 0, background: '#232a47', borderRadius: 12, boxShadow: '0 2px 16px rgba(60,140,231,0.18)', padding: 16, minWidth: 220, zIndex: 100 }}>
+              <div style={{ fontWeight: 700, color: '#fff', marginBottom: 12 }}>Recent Files</div>
+              {recentFiles.length === 0 ? (
+                <div style={{ color: '#bfc7d5', fontStyle: 'italic' }}>No recent files</div>
+              ) : (
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {recentFiles.map((fObj, idx) => (
+                    <li key={fObj.name} style={{ marginBottom: 8 }}>
+                      <button
+                        style={{ background: 'none', border: 'none', color: '#7b5cff', cursor: 'pointer', textAlign: 'left', fontWeight: 600, fontSize: '1rem', borderRadius: 6, padding: '4px 8px', width: '100%' }}
+                        onClick={() => { setShowSidebar(false); handleRecentFileClick(fObj); }}
+                      >
+                        {fObj.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       {/* Global Back Button */}
       {!showUpload && (
         <button
@@ -425,7 +449,14 @@ const PdfParent = () => {
       )}
       <div className={styles.tabs}>
         <button className={activeTab === 'pdf' ? styles.activeTab : ''} onClick={() => handleTab('pdf')}>PDF Viewer</button>
-        <button className={activeTab === 'iter' ? styles.activeTab : ''} onClick={() => handleTab('iter')}>Iteration Info</button>
+        <button
+          className={activeTab === 'iter' ? styles.activeTab : ''}
+          onClick={() => { if (resultData) handleTab('iter'); }}
+          disabled={!resultData}
+          style={!resultData ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+        >
+          Iteration Info
+        </button>
       </div>
       <div className={styles.tabContent}>
         {showUpload ? (
@@ -440,6 +471,7 @@ const PdfParent = () => {
                   id="pdf-upload"
                   onChange={handleFileChange}
                   required
+                  ref={fileInputRef}
                 />
                 <label htmlFor="pdf-upload" className={styles.customFileLabel}>
                   Choose File
