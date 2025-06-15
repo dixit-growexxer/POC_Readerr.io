@@ -27,6 +27,8 @@ const PdfParent = () => {
   const [iterationLoading, setIterationLoading] = useState(false);
   const [iterationError, setIterationError] = useState(null);
   const [iterationExpandedCells, setIterationExpandedCells] = useState({});
+  const [currentIterationIdx, setCurrentIterationIdx] = useState(0);
+  const [iterationExpandAll, setIterationExpandAll] = useState(false);
   const iterationApiCalledRef = useRef({});
 
   useEffect(() => {
@@ -136,6 +138,49 @@ const PdfParent = () => {
     }
   }, [expandAll, resultData]);
 
+  // Collect all expandable keys for iteration data
+  function collectAllIterationExpandableKeys(data, parentKey = '') {
+    let keys = [];
+    if (!data) return keys;
+    Object.entries(data).forEach(([key, value]) => {
+      const cellKey = parentKey + key;
+      const isLargeString = typeof value === 'string' && value.length > 60;
+      const isLeaf = isLeafObject(value);
+      if (isLeaf) {
+        keys.push(cellKey);
+        Object.entries(value).forEach(([k, v]) => {
+          if (typeof v === 'object' && v !== null) {
+            keys = keys.concat(collectAllIterationExpandableKeys(v, cellKey + '_leaf' + k));
+          }
+        });
+      } else if (typeof value === 'object' && value !== null) {
+        keys.push(cellKey);
+        keys = keys.concat(collectAllIterationExpandableKeys(value, cellKey));
+      } else if (isLargeString) {
+        keys.push(cellKey);
+      }
+    });
+    return keys;
+  }
+
+  useEffect(() => {
+    if (iterationExpandAll && iterationData && iterationData[currentIterationIdx]) {
+      const allKeys = collectAllIterationExpandableKeys(iterationData[currentIterationIdx]);
+      setIterationExpandedCells(keys => {
+        const newState = { ...keys };
+        allKeys.forEach(k => { newState[k] = true; });
+        return newState;
+      });
+    } else if (!iterationExpandAll && iterationData && iterationData[currentIterationIdx]) {
+      const allKeys = collectAllIterationExpandableKeys(iterationData[currentIterationIdx]);
+      setIterationExpandedCells(keys => {
+        const newState = { ...keys };
+        allKeys.forEach(k => { newState[k] = false; });
+        return newState;
+      });
+    }
+  }, [iterationExpandAll, iterationData, currentIterationIdx]);
+
   function renderTable(data, parentKey = '') {
     if (!data) return null;
     return (
@@ -224,6 +269,7 @@ const PdfParent = () => {
     setResultData(null);
     setThreshold('');
     setMaxIter('');
+    setActiveTab('pdf'); // Ensure PDF tab is active after back
   };
 
   const handleRecentFileClick = (fileObj) => {
@@ -248,6 +294,7 @@ const PdfParent = () => {
         .then(res => res.json())
         .then(data => {
           setIterationData(Array.isArray(data) ? data : []);
+          setCurrentIterationIdx(0);
           setIterationLoading(false);
         })
         .catch(() => {
@@ -261,7 +308,7 @@ const PdfParent = () => {
       setIterationData(null);
       setIterationExpandedCells({});
     }
-  }, [activeTab, resultData, loading]);
+  }, [activeTab]);
 
   function renderIterationTable(data, parentKey = '') {
     if (!data) return null;
@@ -467,12 +514,67 @@ const PdfParent = () => {
                   )}
                 </>
               ) : (
-                <div className={styles.wip}>Iteration Info Tab (work in progress)</div>
+                <div className={styles.rightModal}>
+                  {iterationLoading ? (
+                    <div style={{color:'#7b5cff', fontWeight:700, fontSize:'1.2rem'}}>Loading iterations...</div>
+                  ) : iterationError ? (
+                    <div style={{color:'red', fontWeight:700}}>{iterationError}</div>
+                  ) : iterationData && iterationData.length > 0 ? (
+                    <>
+                      <div style={{width:'100%'}}>
+                        <div style={{flex:'0 0 auto', width:'100%', background:'transparent', display:'flex', justifyContent:'flex-end', alignItems:'center', padding:'8px 0 8px 0'}}>
+                          <button
+                            className={styles.expandBtn}
+                            style={{
+                              fontWeight: 700,
+                              fontSize: '1.05rem',
+                              background: '#232a47',
+                              color: '#fff',
+                              border: '1px solid #7b5cff',
+                              borderRadius: 8,
+                              padding: '8px 24px',
+                              zIndex: 20,
+                              boxShadow: '0 2px 8px rgba(60,140,231,0.10)',
+                              marginRight: 8
+                            }}
+                            onClick={() => setIterationExpandAll(val => !val)}
+                          >
+                            {iterationExpandAll ? 'Collapse All' : 'Expand All'}
+                          </button>
+                        </div>
+                        {renderIterationTable(iterationData[currentIterationIdx])}
+                      </div>
+                    </>
+                  ) : (
+                    <div className={styles.wip}>No iteration data</div>
+                  )}
+                </div>
               )}
             </div>
           </div>
         )}
       </div>
+      {activeTab === 'iter' && !showUpload && iterationData && iterationData.length > 0 && (
+        <div style={{display:'flex', justifyContent:'center', alignItems:'center', marginTop: 16, gap: 8}}>
+          <button
+            className={styles.iterationNavBtn}
+            onClick={() => setCurrentIterationIdx(i => Math.max(0, i-1))}
+            disabled={currentIterationIdx === 0}
+          >
+            &#8592; Prev
+          </button>
+          <span style={{color:'#bfc7d5', fontWeight:600, fontSize:'1.1rem'}}>
+            Iteration {currentIterationIdx + 1} of {iterationData.length}
+          </span>
+          <button
+            className={styles.iterationNavBtn}
+            onClick={() => setCurrentIterationIdx(i => Math.min(iterationData.length-1, i+1))}
+            disabled={currentIterationIdx === iterationData.length-1}
+          >
+            Next &#8594;
+          </button>
+        </div>
+      )}
     </div>
   );
 };
