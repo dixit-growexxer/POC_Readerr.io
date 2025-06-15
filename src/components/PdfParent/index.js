@@ -23,6 +23,11 @@ const PdfParent = () => {
   const [showUpload, setShowUpload] = useState(true);
   const [recentFiles, setRecentFiles] = useState([]);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [iterationData, setIterationData] = useState(null);
+  const [iterationLoading, setIterationLoading] = useState(false);
+  const [iterationError, setIterationError] = useState(null);
+  const [iterationExpandedCells, setIterationExpandedCells] = useState({});
+  const iterationApiCalledRef = useRef({});
 
   useEffect(() => {
     if (pdfContainerRef.current) {
@@ -231,6 +236,102 @@ const PdfParent = () => {
     setResultData(fileObj.result || null);
   };
 
+  useEffect(() => {
+    if (
+      activeTab === 'iter' &&
+      !iterationLoading &&
+      !iterationData // Only call if not already loaded
+    ) {
+      setIterationLoading(true);
+      setIterationError(null);
+      fetch('http://localhost:3001/iterations')
+        .then(res => res.json())
+        .then(data => {
+          setIterationData(Array.isArray(data) ? data : []);
+          setIterationLoading(false);
+        })
+        .catch(() => {
+          setIterationData([]);
+          setIterationError('Failed to fetch iteration data');
+          setIterationLoading(false);
+        });
+    }
+    // If we switch to a new doc_id, reset iteration data
+    if (resultData && resultData.doc_id && iterationData && iterationData.length > 0 && iterationData[0].doc_id !== resultData.doc_id) {
+      setIterationData(null);
+      setIterationExpandedCells({});
+    }
+  }, [activeTab, resultData, loading]);
+
+  function renderIterationTable(data, parentKey = '') {
+    if (!data) return null;
+    return (
+      <table className={styles.resultTable}>
+        <tbody>
+          {Object.entries(data).map(([key, value]) => {
+            const cellKey = parentKey + key;
+            const isLargeString = typeof value === 'string' && value.length > 60;
+            const isLeaf = isLeafObject(value);
+            if (isLeaf) {
+              const str = JSON.stringify(value, null, 2);
+              const isLarge = str.length > 80;
+              return (
+                <tr key={cellKey}>
+                  <th>{key}</th>
+                  <td>
+                    {isLarge ? (
+                      <>
+                        {iterationExpandedCells[cellKey]
+                          ? renderIterationTable(value, cellKey + '_leaf')
+                          : <div className={styles.expandedContent} style={{fontStyle:'italic',color:'#bfc7d5'}}>Click 'Expand' to see details</div>}
+                        <button className={styles.expandBtn} onClick={() => setIterationExpandedCells(prev => ({ ...prev, [cellKey]: !prev[cellKey] }))}>
+                          {iterationExpandedCells[cellKey] ? 'Collapse' : 'Expand'}
+                        </button>
+                      </>
+                    ) : (
+                      renderIterationTable(value, cellKey + '_leaf')
+                    )}
+                  </td>
+                </tr>
+              );
+            }
+            if (typeof value === 'object' && value !== null) {
+              return (
+                <tr key={cellKey}>
+                  <th>{key}</th>
+                  <td>
+                    {renderIterationTable(value, cellKey)}
+                  </td>
+                </tr>
+              );
+            }
+            if (isLargeString) {
+              return (
+                <tr key={cellKey}>
+                  <th>{key}</th>
+                  <td>
+                    <span>
+                      {iterationExpandedCells[cellKey] ? value : value.slice(0, 60) + '...'}
+                    </span>
+                    <button className={styles.expandBtn} onClick={() => setIterationExpandedCells(prev => ({ ...prev, [cellKey]: !prev[cellKey] }))}>
+                      {iterationExpandedCells[cellKey] ? 'Collapse' : 'Expand'}
+                    </button>
+                  </td>
+                </tr>
+              );
+            }
+            return (
+              <tr key={cellKey}>
+                <th>{key}</th>
+                <td>{value}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    );
+  }
+
   return (
     <div className={styles.parentContainer}>
       {/* Hamburger menu */}
@@ -266,71 +367,75 @@ const PdfParent = () => {
           </div>
         )}
       </div>
+      {/* Global Back Button */}
+      {!showUpload && (
+        <button
+          onClick={handleBack}
+          style={{ position: 'absolute', top: 24, right: 24, background: 'linear-gradient(90deg, #7b5cff 0%, #3c8ce7 100%)', color: '#fff', border: 'none', borderRadius: 24, padding: '8px 24px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', zIndex: 20, boxShadow: '0 2px 8px rgba(60,140,231,0.10)' }}
+        >
+          &#8592; Back
+        </button>
+      )}
       <div className={styles.tabs}>
         <button className={activeTab === 'pdf' ? styles.activeTab : ''} onClick={() => handleTab('pdf')}>PDF Viewer</button>
         <button className={activeTab === 'iter' ? styles.activeTab : ''} onClick={() => handleTab('iter')}>Iteration Info</button>
       </div>
       <div className={styles.tabContent}>
-        {activeTab === 'pdf' && (
-          <>
-            {showUpload ? (
-              <form className={styles.uploadForm} onSubmit={handleSubmit}>
-                <div className={styles.formGroup}>
-                  <label>Upload PDF:</label>
-                  <div className={styles.customFileInputWrapper}>
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      className={styles.customFileInput}
-                      id="pdf-upload"
-                      onChange={handleFileChange}
-                      required
-                    />
-                    <label htmlFor="pdf-upload" className={styles.customFileLabel}>
-                      Choose File
-                    </label>
-                    <span className={styles.selectedFileName}>{selectedFileName || 'No file chosen'}</span>
+        {showUpload ? (
+          <form className={styles.uploadForm} onSubmit={handleSubmit}>
+            <div className={styles.formGroup}>
+              <label>Upload PDF:</label>
+              <div className={styles.customFileInputWrapper}>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  className={styles.customFileInput}
+                  id="pdf-upload"
+                  onChange={handleFileChange}
+                  required
+                />
+                <label htmlFor="pdf-upload" className={styles.customFileLabel}>
+                  Choose File
+                </label>
+                <span className={styles.selectedFileName}>{selectedFileName || 'No file chosen'}</span>
+              </div>
+            </div>
+            <div className={styles.formGroup}>
+              <label>Threshold:</label>
+              <input type="number" value={threshold} onChange={e => setThreshold(e.target.value)} required />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Max Iterations:</label>
+              <input type="number" value={maxIter} onChange={e => setMaxIter(e.target.value)} required />
+            </div>
+            <button type="submit" className={styles.submitBtn}>Submit</button>
+          </form>
+        ) : (
+          <div className={styles.splitContainer}>
+            <div className={styles.leftModal}>
+              {/* PDF viewer always shown, regardless of tab */}
+              {fileUrl && (
+                <>
+                  <div className={styles.pdfNavOverlay} style={{height: pageHeight}}>
+                    <button className={styles.pdfNavButton} onClick={prevPage} disabled={pageNumber <= 1}>&lt;</button>
+                    <button className={styles.pdfNavButton} onClick={nextPage} disabled={pageNumber >= numPages}>&gt;</button>
                   </div>
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Threshold:</label>
-                  <input type="number" value={threshold} onChange={e => setThreshold(e.target.value)} required />
-                </div>
-                <div className={styles.formGroup}>
-                  <label>Max Iterations:</label>
-                  <input type="number" value={maxIter} onChange={e => setMaxIter(e.target.value)} required />
-                </div>
-                <button type="submit" className={styles.submitBtn}>Submit</button>
-              </form>
-            ) : (
-              <div className={styles.splitContainer}>
-                <div className={styles.leftModal}>
-                  <button
-                    onClick={handleBack}
-                    style={{ position: 'absolute', top: 16, left: 16, background: 'linear-gradient(90deg, #7b5cff 0%, #3c8ce7 100%)', color: '#fff', border: 'none', borderRadius: 24, padding: '8px 24px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', zIndex: 5, boxShadow: '0 2px 8px rgba(60,140,231,0.10)' }}
-                  >
-                    &#8592; Back
-                  </button>
-                  {fileUrl && (
-                    <>
-                      <div className={styles.pdfNavOverlay} style={{height: pageHeight}}>
-                        <button className={styles.pdfNavButton} onClick={prevPage} disabled={pageNumber <= 1}>&lt;</button>
-                        <button className={styles.pdfNavButton} onClick={nextPage} disabled={pageNumber >= numPages}>&gt;</button>
-                      </div>
-                      <div className={styles.pdfContainer} ref={pdfContainerRef}>
-                        <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading={null}>
-                          <Page pageNumber={pageNumber} scale={pdfScale} renderTextLayer={false} />
-                        </Document>
-                      </div>
-                    </>
-                  )}
-                  <div className={styles.controls}>
-                    <button onClick={prevPage} disabled={pageNumber <= 1}>Previous</button>
-                    <span style={{margin: '0 10px'}}>Page {pageNumber} / {numPages}</span>
-                    <button onClick={nextPage} disabled={pageNumber >= numPages}>Next</button>
+                  <div className={styles.pdfContainer} ref={pdfContainerRef}>
+                    <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading={null}>
+                      <Page pageNumber={pageNumber} scale={pdfScale} renderTextLayer={false} />
+                    </Document>
                   </div>
-                </div>
-                <div className={styles.rightModal}>
+                </>
+              )}
+              <div className={styles.controls}>
+                <button onClick={prevPage} disabled={pageNumber <= 1}>Previous</button>
+                <span style={{margin: '0 10px'}}>Page {pageNumber} / {numPages}</span>
+                <button onClick={nextPage} disabled={pageNumber >= numPages}>Next</button>
+              </div>
+            </div>
+            <div className={styles.rightModal}>
+              {activeTab === 'pdf' ? (
+                <>
                   {loading ? (
                     <div style={{color:'#7b5cff', fontWeight:700, fontSize:'1.2rem'}}>Loading...</div>
                   ) : resultData ? (
@@ -360,13 +465,12 @@ const PdfParent = () => {
                   ) : (
                     <div className={styles.wip}>work in progress</div>
                   )}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-        {activeTab === 'iter' && (
-          <div className={styles.iterTab}>Iteration Info Tab (work in progress)</div>
+                </>
+              ) : (
+                <div className={styles.wip}>Iteration Info Tab (work in progress)</div>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>
