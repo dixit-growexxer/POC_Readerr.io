@@ -230,6 +230,109 @@
   color: #7b5cff;
   font-weight: 700;
 }
+.iterationTabsContainer {
+  width: 100%;
+  margin-top: 24px;
+  padding: 0 0 0 0;
+  box-sizing: border-box;
+}
+
+.iterationTabsHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.iterationTab {
+  width: 100%;
+  margin: 0 0 16px 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(60,140,231,0.08);
+  padding: 22px 36px 18px 36px;
+  background: #181e36;
+  color: #bfc7d5;
+  font-size: 1.08rem;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  font-weight: 500;
+  transition: background 0.2s, box-shadow 0.2s;
+  border: none;
+  position: relative;
+}
+
+.expandedIterationModal {
+  margin-top: 18px;
+  background: #232a47;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 6px 32px rgba(60,140,231,0.13);
+  padding: 22px 16px 22px 16px;
+  animation: slideDown 0.25s;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.iterationTab:hover {
+  background: #232a47;
+  box-shadow: 0 6px 32px rgba(123,92,255,0.10);
+}
+
+.iterationTab.activeTab {
+  background: #232a47;
+  color: #fff;
+  box-shadow: 0 6px 32px rgba(123,92,255,0.13);
+}
+
+.iterationTabSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  width: 100%;
+}
+
+.iterationTabSummary span {
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: #bfc7d5;
+}
+
+.iterationTabSummary .iterationNumber {
+  color: #7b5cff;
+  font-size: 1.13rem;
+  font-weight: 700;
+  margin-right: 18px;
+}
+
+.iterationTabSummary .summaryLabel {
+  color: #bfc7d5;
+  font-weight: 500;
+  margin-right: 6px;
+}
+
+.iterationTabSummary .summaryValue {
+  color: #fff;
+  font-weight: 700;
+  margin-right: 16px;
+}
+
+
+
+.expandedIterationModal {
+  margin-top: 18px;
+  background: #232a47;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 6px 32px rgba(60,140,231,0.13);
+  padding: 22px 16px 22px 16px;
+  animation: slideDown 0.25s;
+  width: 100%;
+  overflow-x: auto;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Old .iterTab for legacy support */
 .iterTab {
   margin-top: 64px;
   font-size: 1.5rem;

@@ -27,11 +27,12 @@ const PdfParent = () => {
   const [iterationLoading, setIterationLoading] = useState(false);
   const [iterationError, setIterationError] = useState(null);
   const [iterationExpandedCells, setIterationExpandedCells] = useState({});
-  const [currentIterationIdx, setCurrentIterationIdx] = useState(0);
+  const [currentIterationIdx, setCurrentIterationIdx] = useState(-1);
   const [iterationExpandAll, setIterationExpandAll] = useState(false);
   const iterationApiCalledRef = useRef({});
 
   const fileInputRef = useRef(null);
+
 
   useEffect(() => {
     if (pdfContainerRef.current) {
@@ -342,7 +343,7 @@ const PdfParent = () => {
           };
           const transformedData = Array.isArray(data) ? data.map(transformIteration) : [];
           setIterationData(transformedData);
-          setCurrentIterationIdx(0);
+          setCurrentIterationIdx(-1); // All tabs collapsed by default
           setIterationLoading(false);
         })
         .catch(() => {
@@ -634,31 +635,35 @@ const PdfParent = () => {
                   ) : iterationError ? (
                     <div style={{color:'red', fontWeight:700}}>{iterationError}</div>
                   ) : iterationData && iterationData.length > 0 ? (
-                    <>
-                      <div style={{width:'100%'}}>
-                        <div style={{flex:'0 0 auto', width:'100%', background:'transparent', display:'flex', justifyContent:'flex-end', alignItems:'center', padding:'8px 0 8px 0'}}>
-                          <button
-                            className={styles.expandBtn}
-                            style={{
-                              fontWeight: 700,
-                              fontSize: '1.05rem',
-                              background: '#232a47',
-                              color: '#fff',
-                              border: '1px solid #7b5cff',
-                              borderRadius: 8,
-                              padding: '8px 24px',
-                              zIndex: 20,
-                              boxShadow: '0 2px 8px rgba(60,140,231,0.10)',
-                              marginRight: 8
-                            }}
-                            onClick={() => setIterationExpandAll(val => !val)}
+                    <div className={styles.iterationTabsContainer}>
+                      <div className={styles.iterationTabsHeader}>
+                        {iterationData.map((item, idx) => (
+                          <div
+                            key={item.id || idx}
+                            className={styles.iterationTab}
                           >
-                            {iterationExpandAll ? 'Collapse All' : 'Expand All'}
-                          </button>
-                        </div>
-                        {renderIterationTable(iterationData[currentIterationIdx])}
+                            <div className={styles.iterationTabSummary}>
+                              <span className={styles.iterationNumber}>Iteration {item.Iteration}</span>
+                              <span><span className={styles.summaryLabel}>Completeness:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.completeness ?? '-'}</span></span>
+                              <span><span className={styles.summaryLabel}>Accuracy:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.data_accuracy ?? '-'}</span></span>
+                              <span><span className={styles.summaryLabel}>Schema:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.schema_compliance ?? '-'}</span></span>
+                              <button
+                                className={styles.expandBtn}
+                                onClick={() => setCurrentIterationIdx(currentIterationIdx === idx ? -1 : idx)}
+                                aria-label="Expand iteration details"
+                              >
+                                {currentIterationIdx === idx ? '▲' : '▼'}
+                              </button>
+                            </div>
+                            {currentIterationIdx === idx && (
+                              <div className={styles.expandedIterationModal}>
+                                {renderIterationTable(item)}
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    </>
+                    </div>
                   ) : (
                     <div className={styles.wip}>No iteration data</div>
                   )}
@@ -668,27 +673,7 @@ const PdfParent = () => {
           </div>
         )}
       </div>
-      {activeTab === 'iter' && !showUpload && iterationData && iterationData.length > 0 && (
-        <div style={{display:'flex', justifyContent:'center', alignItems:'center', marginTop: 16, gap: 8}}>
-          <button
-            className={styles.iterationNavBtn}
-            onClick={() => setCurrentIterationIdx(i => Math.max(0, i-1))}
-            disabled={currentIterationIdx === 0}
-          >
-            &#8592; Prev
-          </button>
-          <span style={{color:'#bfc7d5', fontWeight:600, fontSize:'1.1rem'}}>
-            Iteration {currentIterationIdx + 1} of {iterationData.length}
-          </span>
-          <button
-            className={styles.iterationNavBtn}
-            onClick={() => setCurrentIterationIdx(i => Math.min(iterationData.length-1, i+1))}
-            disabled={currentIterationIdx === iterationData.length-1}
-          >
-            Next &#8594;
-          </button>
-        </div>
-      )}
+      
     </div>
   );
 };
