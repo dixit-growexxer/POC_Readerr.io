@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import styles from './PdfParent.module.css';
 import { Document, Page, pdfjs } from 'react-pdf/dist/esm/entry.webpack';
 import SkeletonLoader from './SkeletonLoader';
+import UploadResultTable from './UploadResultTable';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const PdfParent = () => {
@@ -98,10 +99,12 @@ const PdfParent = () => {
         formData.append('file', file);
         formData.append('threshold', threshold);
         formData.append('max_iterations', maxIter);
-        const res = await fetch('http://localhost:3001/upload_and_optimize', {
-          method: 'POST',
-          body: formData
-        });
+        const res = await fetch('http://localhost:3001/upload_and_optimize'
+        //   , {
+        //   method: 'POST',
+        //   body: formData
+        // }
+      );
         apiResult = await res.json();
         setDocId(apiResult.doc_id || null); // Store doc_id for API 2
         console.log('DATA RETURNED FROM /upload_and_optimize:', apiResult);
@@ -615,27 +618,7 @@ const PdfParent = () => {
                     null
                   ) : resultData ? (
                     <div style={{width:'100%'}}>
-                      <div style={{flex:'0 0 auto', width:'100%', background:'transparent', display:'flex', justifyContent:'flex-end', alignItems:'center', padding:'8px 0 8px 0'}}>
-                        <button
-                          className={styles.expandBtn}
-                          style={{
-                            fontWeight: 700,
-                            fontSize: '1.05rem',
-                            background: '#232a47',
-                            color: '#fff',
-                            border: '1px solid #7b5cff',
-                            borderRadius: 8,
-                            padding: '8px 24px',
-                            zIndex: 20,
-                            boxShadow: '0 2px 8px rgba(60,140,231,0.10)',
-                            marginRight: 8
-                          }}
-                          onClick={() => setExpandAll(val => !val)}
-                        >
-                          {expandAll ? 'Collapse All' : 'Expand All'}
-                        </button>
-                      </div>
-                      {renderTable(resultData)}
+                      <UploadResultTable resultData={resultData} />
                     </div>
                   ) : (
                     <div className={styles.wip}>work in progress</div>
