@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf/dist/esm/entry.webpack';
 import Controls from './Controls';
 import RecentFiles from './RecentFiles';
+import controlsStyle from '../Css/Controls.module.css';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 
@@ -77,9 +78,8 @@ function Pdfreader() {
         <div className="col s12 m9">
           <br></br>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-evenly", flexWrap: "wrap", width: "100%" }}>
-            <button className="btn pink darken-4 waves-effect waves-light" onClick={handleClick}><i className="fa fa-file-pdf-o"></i> Choose File</button>
-            <input type="file" onChange={handlesubmitfile} accept="application/pdf" style={{ width: "30%", color: "white" }} ref={hiddenFileInput}
-              style={{ display: 'none' }}></input>
+            <button className={controlsStyle.upload_btn} onClick={handleClick} type="button"><i className="fa fa-file-pdf-o"></i> Choose File</button>
+            <input type="file" onChange={handlesubmitfile} accept="application/pdf" ref={hiddenFileInput} style={{ display: 'none' }} />
           </div>
 
           <br></br>

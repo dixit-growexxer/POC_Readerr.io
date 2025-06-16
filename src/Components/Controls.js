@@ -6,13 +6,13 @@ function Controls(props) {
     const { numPages, pageNumber, setPageNumber, fileName, setRotatedoc, rotatedoc } = props;
 
 
-    const isfirstpage = pageNumber <= 1 ? "disabled" : "";
-    const islastpage = pageNumber != numPages ? "" : "disabled";
+    // Use booleans for disabled state
+    const isFirstPage = pageNumber <= 1;
+    const isLastPage = pageNumber === numPages;
 
 
     const nextpage = () => {
-        if (numPages != pageNumber) setPageNumber(pageNumber + 1);
-        console.log(islastpage);
+        if (numPages !== pageNumber) setPageNumber(pageNumber + 1);
     }
     const previouspage = () => {
         setPageNumber(pageNumber - 1);
@@ -21,11 +21,11 @@ function Controls(props) {
         setPageNumber(1);
     }
     const lastpage = () => {
-        if (numPages != pageNumber) setPageNumber(numPages);
+        if (numPages !== pageNumber) setPageNumber(numPages);
     }
 
     const handleRotate = () => {
-        if (rotatedoc == 360) {
+        if (rotatedoc === 360) {
             setRotatedoc(0);
         }
         else {
@@ -43,17 +43,51 @@ function Controls(props) {
 
             <h6 className={controlstyles.file_name}>{fileName}</h6>
             <div className={controlstyles.page_controls}>
-
-                <button className={`btn-floating waves-effect waves-light pink darken-4 ${isfirstpage}`} onClick={firstpage}><i class="fa fa-angle-double-left " aria-hidden="true"></i></button>
-                <button className={`btn-floating waves-effect waves-light pink darken-4 ${isfirstpage}`} onClick={previouspage}><i class="fa fa-angle-left" aria-hidden="true"></i></button>
-                <input type="number" style={{ width: "30px", height: "24px", color: "white", background: "#331427", margin: "0", border: "none" }} value={pageNumber} onChange={handlePageno}></input><h6>/ {numPages}</h6>
-                <button className={`btn-floating waves-effect waves-light pink darken-4 ${islastpage}`} onClick={nextpage}  ><i class="fa fa-angle-right " aria-hidden="true"></i></button>
-                <button className={`btn-floating waves-effect waves-light pink darken-4 ${islastpage}`} onClick={lastpage} ><i class="fa fa-angle-double-right " aria-hidden="true"></i></button>
-
+                <button
+                  className={controlstyles.pdf_nav_btn}
+                  onClick={firstpage}
+                  disabled={isFirstPage}
+                  title="First Page"
+                >
+                  <i className="fa fa-angle-double-left" aria-hidden="true"></i>
+                </button>
+                <button
+                  className={controlstyles.pdf_nav_btn}
+                  onClick={previouspage}
+                  disabled={isFirstPage}
+                  title="Previous Page"
+                >
+                  <i className="fa fa-angle-left" aria-hidden="true"></i>
+                </button>
+                <input
+                  type="number"
+                  style={{ width: "30px", height: "24px", color: "white", background: "#331427", margin: "0", border: "none", textAlign: "center", borderRadius: "4px" }}
+                  value={pageNumber}
+                  min={1}
+                  max={numPages}
+                  onChange={handlePageno}
+                />
+                <h6 style={{ margin: '0 8px', fontWeight: 500 }}>/ {numPages}</h6>
+                <button
+                  className={controlstyles.pdf_nav_btn}
+                  onClick={nextpage}
+                  disabled={isLastPage}
+                  title="Next Page"
+                >
+                  <i className="fa fa-angle-right" aria-hidden="true"></i>
+                </button>
+                <button
+                  className={controlstyles.pdf_nav_btn}
+                  onClick={lastpage}
+                  disabled={isLastPage}
+                  title="Last Page"
+                >
+                  <i className="fa fa-angle-double-right" aria-hidden="true"></i>
+                </button>
             </div>
 
             <div className={controlstyles.tools}>
-                <button className={`btn waves-effect waves-light pink darken-4 `} onClick={handleRotate}  ><i class="fa fa-repeat" aria-hidden="true"></i> Rotate Doc</button>
+                <button className={`btn waves-effect waves-light pink darken-4 `} onClick={handleRotate}  ><i className="fa fa-repeat" aria-hidden="true"></i> Rotate Doc</button>
             </div>
 
         </div>
