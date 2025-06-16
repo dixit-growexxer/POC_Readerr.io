@@ -94,7 +94,14 @@ const PdfParent = () => {
       let apiResult = null;
       try {
         console.log('API CALLED: /upload_and_optimize');
-        const res = await fetch('http://localhost:3001/upload_and_optimize');
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('threshold', threshold);
+        formData.append('max_iterations', maxIter);
+        const res = await fetch('http://localhost:3001/upload_and_optimize', {
+          method: 'POST',
+          body: formData
+        });
         apiResult = await res.json();
         setDocId(apiResult.doc_id || null); // Store doc_id for API 2
         console.log('DATA RETURNED FROM /upload_and_optimize:', apiResult);
