@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './PdfParent.module.css';
 import { Document, Page, pdfjs } from 'react-pdf/dist/esm/entry.webpack';
+import SkeletonLoader from './SkeletonLoader';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const PdfParent = () => {
@@ -47,6 +48,10 @@ const PdfParent = () => {
 
   const handleTab = (tab) => {
     setActiveTab(tab);
+    if (tab === 'iter' && !iterationData) {
+      setIterationLoading(true);
+      setIterationError(null);
+    }
   };
 
   const handleFileChange = (e) => {
@@ -310,10 +315,9 @@ const PdfParent = () => {
   useEffect(() => {
     if (
       activeTab === 'iter' &&
-      !iterationLoading &&
+      iterationLoading && // loader is set to true on tab switch
       !iterationData // Only call if not already loaded
     ) {
-      setIterationLoading(true);
       setIterationError(null);
       console.log('API CALLED: /iterations');
       fetch('http://localhost:3001/iterations')
@@ -353,7 +357,7 @@ const PdfParent = () => {
         });
     }
     // Remove resetting iterationData based on doc_id
-  }, [activeTab]);
+  }, [activeTab, iterationLoading, iterationData]);
 
   // Reset iterationData on browser/tab close or refresh
   useEffect(() => {
@@ -575,8 +579,7 @@ const PdfParent = () => {
         ) : (
           <div className={styles.splitContainer}>
             <div className={styles.leftModal} ref={pdfContainerRef}>
-              {/* Scrollable vertical PDF viewer */}
-              <div className={styles.pdfScrollContainer}>
+                {/* Scrollable vertical PDF viewer */}
                 {fileUrl && (
                   <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading={null}>
                     {numPages && Array.from(new Array(numPages), (el, idx) => (
@@ -585,17 +588,19 @@ const PdfParent = () => {
                         pageNumber={idx + 1}
                         scale={pdfScale}
                         renderTextLayer={false}
+                        loading={null}
                       />
                     ))}
                   </Document>
                 )}
+                {loading && <SkeletonLoader />}
               </div>
-            </div>
             <div className={styles.rightModal}>
+              {iterationLoading && <SkeletonLoader />}
               {activeTab === 'pdf' ? (
                 <>
                   {loading ? (
-                    <div style={{color:'#7b5cff', fontWeight:700, fontSize:'1.2rem'}}>Loading...</div>
+                    null
                   ) : resultData ? (
                     <div style={{width:'100%'}}>
                       <div style={{flex:'0 0 auto', width:'100%', background:'transparent', display:'flex', justifyContent:'flex-end', alignItems:'center', padding:'8px 0 8px 0'}}>
@@ -627,7 +632,7 @@ const PdfParent = () => {
               ) : (
                 <div className={styles.rightModal}>
                   {iterationLoading ? (
-                    <div style={{color:'#7b5cff', fontWeight:700, fontSize:'1.2rem'}}>Loading iterations...</div>
+                    null
                   ) : iterationError ? (
                     <div style={{color:'red', fontWeight:700}}>{iterationError}</div>
                   ) : iterationData && iterationData.length > 0 ? (

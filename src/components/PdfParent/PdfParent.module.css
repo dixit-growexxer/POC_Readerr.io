@@ -480,6 +480,50 @@
   outline: 2px solid #7b5cff;
   outline-offset: 2px;
 }
+
+/* Skeleton Loader Styles */
+.skeletonOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(20, 20, 30, 0.80);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skeletonContent {
+  width: 80%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeletonBar {
+  height: 18px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #2d1a3a 25%, #5b3671 50%, #2d1a3a 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s linear infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.leftModal, .rightModal {
+  position: relative;
+}
+
 .expandedContent {
   margin-top: 8px;
   background: #232a47;
