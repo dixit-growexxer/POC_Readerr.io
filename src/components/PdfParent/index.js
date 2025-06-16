@@ -5,6 +5,8 @@ import SkeletonLoader from './SkeletonLoader';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const PdfParent = () => {
+  // Store doc_id from API 1 for use in API 2
+  const [docId, setDocId] = useState(null);
   const [activeTab, setActiveTab] = useState('pdf');
   const [file, setFile] = useState(null);
   const [fileUrl, setFileUrl] = useState(null);
@@ -94,6 +96,7 @@ const PdfParent = () => {
         console.log('API CALLED: /upload_and_optimize');
         const res = await fetch('http://localhost:3001/upload_and_optimize');
         apiResult = await res.json();
+        setDocId(apiResult.doc_id || null); // Store doc_id for API 2
         console.log('DATA RETURNED FROM /upload_and_optimize:', apiResult);
         // Transform API 1 response to contain only desired fields in the desired order/labels
         const transformed = {
@@ -300,6 +303,7 @@ const PdfParent = () => {
   }
 
   const handleBack = () => {
+    setDocId(null); // Reset docId on back
     setShowUpload(true);
     setSubmitted(false);
     setFile(null);
@@ -320,7 +324,8 @@ const PdfParent = () => {
     ) {
       setIterationError(null);
       console.log('API CALLED: /iterations');
-      fetch('http://localhost:3001/iterations')
+      // fetch(`http://localhost:3001/iterations/${docId}`)
+      fetch(`http://localhost:3001/iterations`)
         .then(res => res.json())
         .then(data => {
           console.log('DATA RETURNED FROM /iterations:', data);
