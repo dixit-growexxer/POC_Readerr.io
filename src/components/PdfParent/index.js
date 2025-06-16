@@ -85,9 +85,18 @@ const PdfParent = () => {
       setShowSidebar(false); // Ensure hamburger menu closes immediately on submit
       let apiResult = null;
       try {
+        console.log('API CALLED: /upload_and_optimize');
         const res = await fetch('http://localhost:3001/upload_and_optimize');
         apiResult = await res.json();
-        setResultData(apiResult);
+        console.log('DATA RETURNED FROM /upload_and_optimize:', apiResult);
+        // Transform API 1 response to contain only desired fields in the desired order/labels
+        const transformed = {
+          "Total Iterations": apiResult.iterations_run,
+          "Threshold Reached": apiResult.threshold_reached,
+          "Message": apiResult.message,
+          "Extracted Data": apiResult.final_response_json
+        };
+        setResultData(transformed);
       } catch (err) {
         apiResult = { error: 'Failed to fetch data from API.' };
         setResultData(apiResult);
@@ -305,10 +314,34 @@ const PdfParent = () => {
     ) {
       setIterationLoading(true);
       setIterationError(null);
+      console.log('API CALLED: /iterations');
       fetch('http://localhost:3001/iterations')
         .then(res => res.json())
         .then(data => {
-          setIterationData(Array.isArray(data) ? data : []);
+          console.log('DATA RETURNED FROM /iterations:', data);
+          // Transform API 2 response array before storing in state
+          const transformIteration = (item) => {
+            const transformed = {
+              'Iteration': item.iteration,
+              'Extracted Data': item.extracted_json,
+            };
+            if (item.evaluation_data && typeof item.evaluation_data === 'object') {
+              // Filter and rename fields in evaluation_data
+              const evalData = {};
+              Object.entries(item.evaluation_data).forEach(([k, v]) => {
+                if (k === 'confidence_level' || k === 'overall_score') return; // exclude
+                if (k === 'threshold_calculations') {
+                  evalData['Critical Calculation'] = v;
+                } else {
+                  evalData[k] = v;
+                }
+              });
+              transformed['Evaluation'] = evalData;
+            }
+            return transformed;
+          };
+          const transformedData = Array.isArray(data) ? data.map(transformIteration) : [];
+          setIterationData(transformedData);
           setCurrentIterationIdx(0);
           setIterationLoading(false);
         })
@@ -481,11 +514,60 @@ const PdfParent = () => {
             </div>
             <div className={styles.formGroup}>
               <label>Threshold:</label>
-              <input type="number" value={threshold} onChange={e => setThreshold(e.target.value)} required />
+              <input
+  type="number"
+  value={threshold}
+  min={0}
+  max={100}
+  step={0.01}
+  placeholder="0 - 100"
+  onChange={e => {
+    let val = e.target.value;
+    // Only allow numbers, up to two decimals, between 0 and 100
+    if (val === '') {
+      setThreshold('');
+      return;
+    }
+    // Regex for up to 2 decimals
+    if (/^\d{0,3}(\.\d{0,2})?$/.test(val)) {
+      let num = parseFloat(val);
+      if (num < 0) num = 0;
+      if (num > 100) num = 100;
+      // Keep at most two decimals
+      val = num.toFixed(2);
+      // Remove trailing zeros/decimal if not needed
+      val = parseFloat(val).toString();
+      setThreshold(val);
+    }
+  }}
+  required
+/>
             </div>
             <div className={styles.formGroup}>
               <label>Max Iterations:</label>
-              <input type="number" value={maxIter} onChange={e => setMaxIter(e.target.value)} required />
+              <input
+  type="number"
+  value={maxIter}
+  min={1}
+  max={10}
+  step={1}
+  placeholder="1 - 10"
+  onChange={e => {
+    let val = e.target.value;
+    // Only allow integers between 1 and 10
+    if (val === '') {
+      setMaxIter('');
+      return;
+    }
+    if (/^\d{1,2}$/.test(val)) {
+      let num = parseInt(val, 10);
+      if (num < 1) num = 1;
+      if (num > 10) num = 10;
+      setMaxIter(num.toString());
+    }
+  }}
+  required
+/>
             </div>
             <button type="submit" className={styles.submitBtn}>Submit</button>
           </form>
