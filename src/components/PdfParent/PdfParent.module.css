@@ -111,17 +111,33 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background: #181e36;
   border-right: 2px solid #232a47;
   padding: 0;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
   min-width: 0;
   width: 0;
   max-width: 100%;
   height: 100%; /* Always match parent height */
+
+  /* Custom scrollbar styles */
+  scrollbar-width: thin;
+  scrollbar-color: #7b5cff #181e36;
 }
+.leftModal::-webkit-scrollbar {
+  width: 10px;
+}
+.leftModal::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #7b5cff 0%, #3c8ce7 100%);
+  border-radius: 8px;
+}
+.leftModal::-webkit-scrollbar-track {
+  background: #181e36;
+  border-radius: 8px;
+}
+
 .rightModal {
   flex: 1 1 0;
   background: #0a1026;

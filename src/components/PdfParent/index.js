@@ -574,25 +574,21 @@ const PdfParent = () => {
           </form>
         ) : (
           <div className={styles.splitContainer}>
-            <div className={styles.leftModal}>
-              {/* PDF viewer always shown, regardless of tab */}
-              {fileUrl && (
-                <>
-                  <div className={styles.pdfNavOverlay} style={{height: pageHeight}}>
-                    <button className={styles.pdfNavButton} onClick={prevPage} disabled={pageNumber <= 1}>&lt;</button>
-                    <button className={styles.pdfNavButton} onClick={nextPage} disabled={pageNumber >= numPages}>&gt;</button>
-                  </div>
-                  <div className={styles.pdfContainer} ref={pdfContainerRef}>
-                    <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading={null}>
-                      <Page pageNumber={pageNumber} scale={pdfScale} renderTextLayer={false} />
-                    </Document>
-                  </div>
-                </>
-              )}
-              <div className={styles.controls}>
-                <button onClick={prevPage} disabled={pageNumber <= 1}>Previous</button>
-                <span style={{margin: '0 10px'}}>Page {pageNumber} / {numPages}</span>
-                <button onClick={nextPage} disabled={pageNumber >= numPages}>Next</button>
+            <div className={styles.leftModal} ref={pdfContainerRef}>
+              {/* Scrollable vertical PDF viewer */}
+              <div className={styles.pdfScrollContainer}>
+                {fileUrl && (
+                  <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading={null}>
+                    {numPages && Array.from(new Array(numPages), (el, idx) => (
+                      <Page
+                        key={`page_${idx + 1}`}
+                        pageNumber={idx + 1}
+                        scale={pdfScale}
+                        renderTextLayer={false}
+                      />
+                    ))}
+                  </Document>
+                )}
               </div>
             </div>
             <div className={styles.rightModal}>
