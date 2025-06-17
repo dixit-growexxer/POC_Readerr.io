@@ -99,10 +99,11 @@ const PdfParent = () => {
         formData.append('file', file);
         formData.append('threshold', threshold);
         formData.append('max_iterations', maxIter);
-        const res = await fetch('http://localhost:5000/upload_and_optimize', {
-          method: 'POST',
-          body: formData
-        }
+        const res = await fetch('http://localhost:3001/upload_and_optimize'
+        //   , {
+        //   method: 'POST',
+        //   body: formData
+        // }
       );
         apiResult = await res.json();
         setDocId(apiResult.doc_id || null); // Store doc_id for API 2
@@ -335,8 +336,8 @@ const PdfParent = () => {
       !iterationData // Only call if not already loaded
     ) {
       setIterationError(null);
-      fetch(`http://localhost:5000/iterations/${docId}`)
-      // fetch(`http://localhost:3001/iterations`)
+      // fetch(`http://localhost:5000/iterations/${docId}`)
+      fetch(`http://localhost:3001/iterations`)
         .then(res => res.json())
         .then(data => {
           // Transform API 2 response array before storing in state
@@ -346,7 +347,8 @@ const PdfParent = () => {
               'Iteration': item.iteration,
               'Score': item.score,
               'Extracted Data': item.extracted_json,
-              performance_score: item.performance_score
+              performance_score: item.performance_score,
+              total_present_fields: item.evaluation_data?.threshold_calculations?.total_present_priority_fields
             };
             if (item.evaluation_data && typeof item.evaluation_data === 'object') {
               // Filter and rename fields in evaluation_data
@@ -662,7 +664,14 @@ const PdfParent = () => {
                               <span><span className={styles.summaryLabel}>Invalid Mapping Penalty:</span> <span className={styles.summaryValue}>{item.performance_score?.invalid_mapping ?? '-'}</span></span>
                               <span><span className={styles.summaryLabel}>Hallucination Penalty:</span> <span className={styles.summaryValue}>{item.performance_score?.hallucination ?? '-'}</span></span>
                               <span><span className={styles.summaryLabel}>Missing Value Penalty:</span> <span className={styles.summaryValue}>{item.performance_score?.missing_value ?? '-'}</span></span>
-                              <span><span className={styles.summaryLabel}>Score:</span> <span className={styles.summaryValue}>{item.Score ?? item.score ?? '-'}{(item.Score !== undefined || item.score !== undefined) ? '/100' : ''}</span></span>
+                              <span><span className={styles.summaryLabel}>Total Present Fields:</span> <span className={styles.summaryValue}>{item.total_present_fields ?? '-'}</span></span>
+                              <span className={styles.scoreWithTooltip}>
+  <span className={styles.summaryLabel} style={{position: 'relative', cursor: 'pointer'}}>
+    Score
+    <span className={styles.scoreTooltip}>Score = ((Total Present Fields - Total Penalties) / Total Present Fields) × 100</span>
+  </span>
+  <span className={styles.summaryValue}>{item.Score ?? item.score ?? '-'}{(item.Score !== undefined || item.score !== undefined) ? '/100' : ''}</span>
+</span>
                               <button
                                 className={styles.expandBtn}
                                 onClick={e => { e.stopPropagation(); setCurrentIterationIdx(currentIterationIdx === idx ? -1 : idx); }}
