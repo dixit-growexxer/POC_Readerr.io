@@ -1,6 +1,16 @@
 import React from "react";
 import styles from "./PdfParent.module.css";
 
+// Helper to convert snake_case or space separated to Pascal Case (with spaces)
+function pascalCase(str) {
+  return String(str)
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+
 // Card and table styles reused from UploadResultTable
 const cardStyle = {
   background: '#181e36',
@@ -53,7 +63,7 @@ const renderKeyValueTable = (obj, indent = 0) => {
           <thead>
             <tr>
               {columns.map(col => (
-                <th key={col} style={tableHeaderStyle}>{col.replace(/_/g, ' ')}</th>
+                <th key={pascalCase(col)} style={tableHeaderStyle}>{pascalCase(col)}</th>
               ))}
             </tr>
           </thead>
@@ -61,7 +71,7 @@ const renderKeyValueTable = (obj, indent = 0) => {
             {obj.map((item, i) => (
               <tr key={i}>
                 {columns.map(col => (
-                  <td key={col} style={cellStyle}>
+                  <td key={pascalCase(col)} style={cellStyle}>
                     {typeof item?.[col] === 'object' && item?.[col] !== null
                       ? renderKeyValueTable(item[col], indent + 16)
                       : String(item?.[col] ?? '')}
@@ -90,8 +100,8 @@ const renderKeyValueTable = (obj, indent = 0) => {
       <table className={styles.resultTable} style={{ width: 'auto', marginBottom: 0, marginLeft: indent }}>
         <tbody>
           {Object.entries(obj).map(([key, value]) => (
-            <tr key={key}>
-              <th style={{ ...tableHeaderStyle, ...cellStyle }}>{key.replace(/_/g, ' ')}</th>
+            <tr key={pascalCase(key)}>
+              <th style={{ ...tableHeaderStyle, ...cellStyle }}>{pascalCase(key)}</th>
               <td style={cellStyle}>{renderKeyValueTable(value, indent + 16)}</td>
             </tr>
           ))}
@@ -106,10 +116,10 @@ const renderKeyValueTable = (obj, indent = 0) => {
 // Renders a card for each top-level field
 const renderFieldsCard = (title, fields) => (
   <div style={cardStyle}>
-    <div style={sectionHeaderStyle}>{title}</div>
+    <div style={sectionHeaderStyle}>{pascalCase(title)}</div>
     <div style={tableScroll}>
       {Object.entries(fields).map(([key, value]) => (
-        <div key={key} style={{ marginBottom: 18 }}>
+        <div key={pascalCase(key)} style={{ marginBottom: 18 }}>
           <div
             style={{
               color: '#7b5cff',
@@ -127,14 +137,14 @@ const renderFieldsCard = (title, fields) => (
               display: 'block',
             }}
           >
-            {key.replace(/_/g, ' ')}
+            {pascalCase(key)}
           </div>
           {Array.isArray(value) && value.length && typeof value[0] === 'object' ? (
             <table className={styles.resultTable} style={tableStyleAuto}>
               <thead>
                 <tr>
                   {Object.keys(value[0]).map(col => (
-                    <th key={col} style={tableHeaderStyle}>{col.replace(/_/g, ' ')}</th>
+                    <th key={pascalCase(col)} style={tableHeaderStyle}>{pascalCase(col)}</th>
                   ))}
                 </tr>
               </thead>
@@ -142,7 +152,7 @@ const renderFieldsCard = (title, fields) => (
                 {value.map((item, i) => (
                   <tr key={i}>
                     {Object.keys(value[0]).map(col => (
-                      <td key={col} style={cellStyle}>{item[col]}</td>
+                      <td key={pascalCase(col)} style={cellStyle}>{item[col]}</td>
                     ))}
                   </tr>
                 ))}
@@ -176,10 +186,10 @@ const SmartResultTable = ({ data, title }) => {
 
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      {title && <div style={{ ...sectionHeaderStyle, fontSize: '1.5rem', marginBottom: 24 }}>{title}</div>}
+      {title && <div style={{ ...sectionHeaderStyle, fontSize: '1.5rem', marginBottom: 24 }}>{pascalCase(title)}</div>}
       {/* Only render cards for nested fields (no summary) */}
       {Object.entries(nestedFields).map(([key, value]) => (
-        renderFieldsCard(key.replace(/_/g, ' '), value)
+        renderFieldsCard(key, value)
       ))}
     </div>
   );

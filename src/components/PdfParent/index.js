@@ -12,8 +12,8 @@ const PdfParent = () => {
   const [activeTab, setActiveTab] = useState('pdf');
   const [file, setFile] = useState(null);
   const [fileUrl, setFileUrl] = useState(null);
-  const [threshold, setThreshold] = useState('');
-  const [maxIter, setMaxIter] = useState('');
+  const [threshold, setThreshold] = useState('90');
+  const [maxIter, setMaxIter] = useState('5');
   const [submitted, setSubmitted] = useState(false);
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -99,10 +99,12 @@ const PdfParent = () => {
         formData.append('file', file);
         formData.append('threshold', threshold);
         formData.append('max_iterations', maxIter);
-        const res = await fetch('http://localhost:5000/upload_and_optimize', {
-          method: 'POST',
-          body: formData
-        });
+        const res = await fetch('http://localhost:3001/upload_and_optimize'
+        //   , {
+        //   method: 'POST',
+        //   body: formData
+        // }
+      );
         apiResult = await res.json();
         setDocId(apiResult.doc_id || null); // Store doc_id for API 2
         // Transform API 1 response to contain only desired fields in the desired order/labels
@@ -330,8 +332,8 @@ const PdfParent = () => {
       !iterationData // Only call if not already loaded
     ) {
       setIterationError(null);
-      fetch(`http://localhost:5000/iterations/${docId}`)
-      // fetch(`http://localhost:3001/iterations`)
+      // fetch(`http://localhost:5000/iterations/${docId}`)
+      fetch(`http://localhost:3001/iterations`)
         .then(res => res.json())
         .then(data => {
           // Transform API 2 response array before storing in state
@@ -497,14 +499,14 @@ const PdfParent = () => {
         </button>
       )}
       <div className={styles.tabs}>
-        <button className={activeTab === 'pdf' ? styles.activeTab : ''} onClick={() => handleTab('pdf')}>PDF Viewer</button>
+        <button className={activeTab === 'pdf' ? styles.activeTab : ''} onClick={() => handleTab('pdf')}>Extraction Details</button>
         <button
           className={activeTab === 'iter' ? styles.activeTab : ''}
           onClick={() => { if (resultData) handleTab('iter'); }}
           disabled={!resultData}
           style={!resultData ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
         >
-          Iteration Info
+          Iteration Details
         </button>
       </div>
       <div className={styles.tabContent}>
@@ -538,6 +540,7 @@ const PdfParent = () => {
   max={100}
   step={0.01}
   placeholder="0 - 100"
+  defaultValue="90"
   onChange={e => {
     let val = e.target.value;
     // Only allow numbers, up to two decimals, between 0 and 100
@@ -569,6 +572,7 @@ const PdfParent = () => {
   max={10}
   step={1}
   placeholder="1 - 10"
+  defaultValue="5"
   onChange={e => {
     let val = e.target.value;
     // Only allow integers between 1 and 10

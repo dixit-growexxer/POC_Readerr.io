@@ -1,6 +1,16 @@
 import React from "react";
 import styles from "./PdfParent.module.css";
 
+// Helper to convert snake_case or space separated to PascalCase
+function pascalCase(str) {
+  return String(str)
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+
 // Recursive row renderer
 const renderRows = (data, level = 0) => {
   if (!data || typeof data !== 'object') return null;
@@ -11,7 +21,7 @@ const renderRows = (data, level = 0) => {
       return (
         <React.Fragment key={key + idx}>
           <tr>
-            <th style={{ paddingLeft: 16 * level, fontWeight: 600, background: level === 0 ? '#232a47' : undefined, color: '#bfc7d5' }} colSpan={2}>{key.replace(/_/g, ' ')}</th>
+            <th style={{ paddingLeft: 16 * level, fontWeight: 600, background: level === 0 ? '#232a47' : undefined, color: '#bfc7d5' }} colSpan={2}>{pascalCase(key)}</th>
           </tr>
           <tr>
             <td colSpan={2} style={{ paddingLeft: 16 * (level + 1), background: '#181e36' }}>
@@ -19,7 +29,7 @@ const renderRows = (data, level = 0) => {
                 <thead>
                   <tr>
                     {columns.map(col => (
-                      <th key={col} style={{ color: '#bfc7d5', fontWeight: 500 }}>{col.replace(/_/g, ' ')}</th>
+                      <th key={pascalCase(col)} style={{ color: '#bfc7d5', fontWeight: 500 }}>{pascalCase(col)}</th>
                     ))}
                   </tr>
                 </thead>
@@ -27,7 +37,7 @@ const renderRows = (data, level = 0) => {
                   {value.map((item, i) => (
                     <tr key={i}>
                       {columns.map(col => (
-                        <td key={col}>{item[col]}</td>
+                        <td key={pascalCase(col)}>{item[col]}</td>
                       ))}
                     </tr>
                   ))}
@@ -42,7 +52,7 @@ const renderRows = (data, level = 0) => {
       return (
         <React.Fragment key={key + idx}>
           <tr>
-            <th style={{ paddingLeft: 16 * level, fontWeight: 600, background: level === 0 ? '#232a47' : undefined, color: '#bfc7d5' }}>{key.replace(/_/g, ' ')}</th>
+            <th style={{ paddingLeft: 16 * level, fontWeight: 600, background: level === 0 ? '#232a47' : undefined, color: '#bfc7d5' }}>{pascalCase(key)}</th>
             <td></td>
           </tr>
           {renderRows(value, level + 1)}
@@ -52,7 +62,7 @@ const renderRows = (data, level = 0) => {
       // Primitive value
       return (
         <tr key={key + idx}>
-          <th style={{ paddingLeft: 16 * level, fontWeight: 500, background: level === 0 ? '#232a47' : undefined, color: '#bfc7d5' }}>{key.replace(/_/g, ' ')}</th>
+          <th style={{ paddingLeft: 16 * level, fontWeight: 500, background: level === 0 ? '#232a47' : undefined, color: '#bfc7d5' }}>{pascalCase(key)}</th>
           <td>{String(value)}</td>
         </tr>
       );
@@ -107,7 +117,7 @@ const renderSummary = (data) => (
         {Object.entries(data).map(([key, value]) =>
           typeof value !== 'object' || value === null ? (
             <tr key={key}>
-              <th style={tableHeaderStyle}>{key.replace(/_/g, ' ')}</th>
+              <th style={tableHeaderStyle}>{pascalCase(key)}</th>
               <td>{String(value)}</td>
             </tr>
           ) : null
@@ -122,7 +132,7 @@ const renderKeyValueTable = (obj, indent = 0) => (
     <tbody>
       {Object.entries(obj).map(([key, value]) => (
         <tr key={key}>
-          <th style={{ ...tableHeaderStyle, ...cellStyle }}>{key.replace(/_/g, ' ')}</th>
+          <th style={{ ...tableHeaderStyle, ...cellStyle }}>{pascalCase(key)}</th>
           <td style={cellStyle}>
             {Array.isArray(value)
               ? (value.length && typeof value[0] === 'object'
@@ -131,7 +141,7 @@ const renderKeyValueTable = (obj, indent = 0) => (
                       <thead>
                         <tr>
                           {Object.keys(value[0]).map(col => (
-                            <th key={col} style={cellStyle}>{col.replace(/_/g, ' ')}</th>
+                            <th key={pascalCase(col)} style={cellStyle}>{pascalCase(col)}</th>
                           ))}
                         </tr>
                       </thead>
@@ -139,7 +149,7 @@ const renderKeyValueTable = (obj, indent = 0) => (
                         {value.map((item, i) => (
                           <tr key={i}>
                             {Object.keys(value[0]).map(col => (
-                              <td key={col} style={cellStyle}>{typeof item[col] === 'object' && item[col] !== null ? renderKeyValueTable(item[col], indent + 16) : String(item[col])}</td>
+                              <td key={pascalCase(col)} style={cellStyle}>{typeof item[col] === 'object' && item[col] !== null ? renderKeyValueTable(item[col], indent + 16) : String(item[col])}</td>
                             ))}
                           </tr>
                         ))}
@@ -164,7 +174,7 @@ const renderKeyValueTable = (obj, indent = 0) => (
 
 const renderFieldsCard = (title, fields) => (
   <div style={cardStyle}>
-    <div style={sectionHeaderStyle}>{title}</div>
+    <div style={sectionHeaderStyle}>{pascalCase(title)}</div>
     <div style={tableScroll}>
       {Object.entries(fields).map(([key, value]) => (
         <div key={key} style={{ marginBottom: 18 }}>
@@ -185,14 +195,14 @@ const renderFieldsCard = (title, fields) => (
               display: 'block',
             }}
           >
-            {key.replace(/_/g, ' ')}
+            {pascalCase(key)}
           </div>
           {Array.isArray(value) && value.length && typeof value[0] === 'object' ? (
             <table className={styles.resultTable} style={tableStyleAuto}>
               <thead>
                 <tr>
                   {Object.keys(value[0]).map(col => (
-                    <th key={col} style={{ ...tableHeaderStyle, ...cellStyle }}>{col.replace(/_/g, ' ')}</th>
+                    <th key={pascalCase(col)} style={{ ...tableHeaderStyle, ...cellStyle }}>{pascalCase(col)}</th>
                   ))}
                 </tr>
               </thead>
@@ -200,7 +210,7 @@ const renderFieldsCard = (title, fields) => (
                 {value.map((item, i) => (
                   <tr key={i}>
                     {Object.keys(value[0]).map(col => (
-                      <td key={col} style={cellStyle}>{item[col]}</td>
+                      <td key={pascalCase(col)} style={cellStyle}>{item[col]}</td>
                     ))}
                   </tr>
                 ))}
@@ -239,7 +249,7 @@ const UploadResultTable = ({ resultData }) => {
       {nestedFields['Additional Fields'] && renderFieldsCard('Additional Fields', nestedFields['Additional Fields'])}
       {/* Fallback: render any other nested fields */}
       {Object.entries(nestedFields).map(([key, value]) => (
-        !['Priority Fields', 'Extracted Data', 'Additional Fields'].includes(key) && renderFieldsCard(key.replace(/_/g, ' '), value)
+        !['Priority Fields', 'Extracted Data', 'Additional Fields'].includes(key) && renderFieldsCard(pascalCase(key), value)
       ))}
     </div>
   );
