@@ -648,7 +648,7 @@ const PdfParent = () => {
                               <span><span className={styles.summaryLabel}>Completeness:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.completeness ?? '-'}{item.Evaluation?.category_scores?.completeness !== undefined ? '/25' : ''}</span></span>
                               <span><span className={styles.summaryLabel}>Data Accuracy:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.data_accuracy ?? '-'}{item.Evaluation?.category_scores?.data_accuracy !== undefined ? '/60' : ''}</span></span>
                               <span><span className={styles.summaryLabel}>Schema Compliance:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.schema_compliance ?? '-'}{item.Evaluation?.category_scores?.schema_compliance !== undefined ? '/15' : ''}</span></span>
-                              <span><span className={styles.summaryLabel}>Score:</span> <span className={styles.summaryValue}>{item.Score ?? item.score ?? '-'}</span></span>
+                              <span><span className={styles.summaryLabel}>Score:</span> <span className={styles.summaryValue}>{item.Score ?? item.score ?? '-'}{(item.Score !== undefined || item.score !== undefined) ? '/100' : ''}</span></span>
                               <button
                                 className={styles.expandBtn}
                                 onClick={e => { e.stopPropagation(); setCurrentIterationIdx(currentIterationIdx === idx ? -1 : idx); }}
