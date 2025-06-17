@@ -95,20 +95,16 @@ const PdfParent = () => {
       setShowSidebar(false); // Ensure hamburger menu closes immediately on submit
       let apiResult = null;
       try {
-        console.log('API CALLED: /upload_and_optimize');
         const formData = new FormData();
         formData.append('file', file);
         formData.append('threshold', threshold);
         formData.append('max_iterations', maxIter);
-        const res = await fetch('http://localhost:3001/upload_and_optimize'
-        //   , {
-        //   method: 'POST',
-        //   body: formData
-        // }
-      );
+        const res = await fetch('http://localhost:5000/upload_and_optimize', {
+          method: 'POST',
+          body: formData
+        });
         apiResult = await res.json();
         setDocId(apiResult.doc_id || null); // Store doc_id for API 2
-        console.log('DATA RETURNED FROM /upload_and_optimize:', apiResult);
         // Transform API 1 response to contain only desired fields in the desired order/labels
         const transformed = {
           "Total Iterations": apiResult.iterations_run,
@@ -334,12 +330,10 @@ const PdfParent = () => {
       !iterationData // Only call if not already loaded
     ) {
       setIterationError(null);
-      console.log('API CALLED: /iterations');
-      // fetch(`http://localhost:3001/iterations/${docId}`)
-      fetch(`http://localhost:3001/iterations`)
+      fetch(`http://localhost:5000/iterations/${docId}`)
+      // fetch(`http://localhost:3001/iterations`)
         .then(res => res.json())
         .then(data => {
-          console.log('DATA RETURNED FROM /iterations:', data);
           // Transform API 2 response array before storing in state
           const transformIteration = (item) => {
             const transformed = {
@@ -388,7 +382,6 @@ const PdfParent = () => {
   }, []);
 
   function renderIterationTable(data, parentKey = '') {
-    console.log('renderIterationTable data:', data);
     if (!data) return null;
     return (
       <table className={styles.resultTable}>
