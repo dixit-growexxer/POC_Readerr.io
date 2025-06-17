@@ -3,6 +3,7 @@ import styles from './PdfParent.module.css';
 import { Document, Page, pdfjs } from 'react-pdf/dist/esm/entry.webpack';
 import SkeletonLoader from './SkeletonLoader';
 import UploadResultTable from './UploadResultTable';
+import SmartResultTable from './SmartResultTable';
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const PdfParent = () => {
@@ -343,6 +344,7 @@ const PdfParent = () => {
           const transformIteration = (item) => {
             const transformed = {
               'Iteration': item.iteration,
+              'Score': item.score,
               'Extracted Data': item.extracted_json,
             };
             if (item.evaluation_data && typeof item.evaluation_data === 'object') {
@@ -386,6 +388,7 @@ const PdfParent = () => {
   }, []);
 
   function renderIterationTable(data, parentKey = '') {
+    console.log('renderIterationTable data:', data);
     if (!data) return null;
     return (
       <table className={styles.resultTable}>
@@ -512,6 +515,7 @@ const PdfParent = () => {
         </button>
       </div>
       <div className={styles.tabContent}>
+        {(loading || iterationLoading) && <SkeletonLoader /> }
         {showUpload ? (
           <form className={styles.uploadForm} onSubmit={handleSubmit}>
             <div className={styles.formGroup}>
@@ -592,7 +596,8 @@ const PdfParent = () => {
             <button type="submit" className={styles.submitBtn}>Submit</button>
           </form>
         ) : (
-          <div className={styles.splitContainer}>
+          <div className={styles.splitContainer} style={{position:'relative'}}>
+
             <div className={styles.leftModal} ref={pdfContainerRef}>
                 {/* Scrollable vertical PDF viewer */}
                 {fileUrl && (
@@ -608,10 +613,10 @@ const PdfParent = () => {
                     ))}
                   </Document>
                 )}
-                {loading && <SkeletonLoader />}
+                
               </div>
             <div className={styles.rightModal}>
-              {iterationLoading && <SkeletonLoader />}
+              
               {activeTab === 'pdf' ? (
                 <>
                   {loading ? (
@@ -638,22 +643,23 @@ const PdfParent = () => {
                             key={item.id || idx}
                             className={styles.iterationTab}
                           >
-                            <div className={styles.iterationTabSummary}>
-                              <span className={styles.iterationNumber}>Iteration {item.Iteration}</span>
+                            <div className={styles.iterationTabSummaryFlex}>
+                              <div className={styles.iterationTabLabel}>{`Iteration ${item.Iteration || item.iteration || ''}`}</div>
                               <span><span className={styles.summaryLabel}>Completeness:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.completeness ?? '-'}</span></span>
-                              <span><span className={styles.summaryLabel}>Accuracy:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.data_accuracy ?? '-'}</span></span>
-                              <span><span className={styles.summaryLabel}>Schema:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.schema_compliance ?? '-'}</span></span>
+                              <span><span className={styles.summaryLabel}>Data Accuracy:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.data_accuracy ?? '-'}</span></span>
+                              <span><span className={styles.summaryLabel}>Schema Compliance:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.schema_compliance ?? '-'}</span></span>
+                              <span><span className={styles.summaryLabel}>Score:</span> <span className={styles.summaryValue}>{item.Score ?? item.score ?? '-'}</span></span>
                               <button
                                 className={styles.expandBtn}
                                 onClick={() => setCurrentIterationIdx(currentIterationIdx === idx ? -1 : idx)}
                                 aria-label="Expand iteration details"
                               >
-                                {currentIterationIdx === idx ? '▲' : '▼'}
+                                {currentIterationIdx === idx ? '\u25b2' : '\u25bc'}
                               </button>
                             </div>
                             {currentIterationIdx === idx && (
                               <div className={styles.expandedIterationModal}>
-                                {renderIterationTable(item)}
+                                <SmartResultTable data={item} title={`Iteration ${item.Iteration || item.iteration || ''}`} />
                               </div>
                             )}
                           </div>

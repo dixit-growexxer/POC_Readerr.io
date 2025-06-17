@@ -1,8 +1,9 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import styles from './PdfParent.module.css';
 
-const SkeletonLoader = ({ className = '' }) => {
-  return (
+const SkeletonLoader = ({ className = '' }) =>
+  ReactDOM.createPortal(
     <div className={`${styles.skeletonOverlay} ${className}`}>
       <div className={styles.skeletonContent}>
         <div className={styles.skeletonBar} style={{ width: '60%' }} />
@@ -11,8 +12,8 @@ const SkeletonLoader = ({ className = '' }) => {
         <div className={styles.skeletonBar} style={{ width: '70%' }} />
         <div className={styles.skeletonBar} style={{ width: '50%' }} />
       </div>
-    </div>
+    </div>,
+    document.body
   );
-};
 
 export default SkeletonLoader;
