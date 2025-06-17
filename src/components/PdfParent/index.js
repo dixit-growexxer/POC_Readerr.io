@@ -99,11 +99,10 @@ const PdfParent = () => {
         formData.append('file', file);
         formData.append('threshold', threshold);
         formData.append('max_iterations', maxIter);
-        const res = await fetch('http://localhost:3001/upload_and_optimize'
-        //   , {
-        //   method: 'POST',
-        //   body: formData
-        // }
+        const res = await fetch('http://localhost:5000/upload_and_optimize', {
+          method: 'POST',
+          body: formData
+        }
       );
         apiResult = await res.json();
         setDocId(apiResult.doc_id || null); // Store doc_id for API 2
@@ -336,8 +335,8 @@ const PdfParent = () => {
       !iterationData // Only call if not already loaded
     ) {
       setIterationError(null);
-      // fetch(`http://localhost:5000/iterations/${docId}`)
-      fetch(`http://localhost:3001/iterations`)
+      fetch(`http://localhost:5000/iterations/${docId}`)
+      // fetch(`http://localhost:3001/iterations`)
         .then(res => res.json())
         .then(data => {
           // Transform API 2 response array before storing in state
@@ -347,6 +346,7 @@ const PdfParent = () => {
               'Iteration': item.iteration,
               'Score': item.score,
               'Extracted Data': item.extracted_json,
+              performance_score: item.performance_score
             };
             if (item.evaluation_data && typeof item.evaluation_data === 'object') {
               // Filter and rename fields in evaluation_data
@@ -658,9 +658,10 @@ const PdfParent = () => {
                           >
                             <div className={styles.iterationTabSummaryFlex} style={{cursor:'pointer'}} onClick={() => setCurrentIterationIdx(currentIterationIdx === idx ? -1 : idx)}>
                               <div className={styles.iterationTabLabel}>{`Iteration ${item.Iteration || item.iteration || ''}`}</div>
-                              <span><span className={styles.summaryLabel}>Completeness:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.completeness ?? '-'}{item.Evaluation?.category_scores?.completeness !== undefined ? '/25' : ''}</span></span>
-                              <span><span className={styles.summaryLabel}>Data Accuracy:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.data_accuracy ?? '-'}{item.Evaluation?.category_scores?.data_accuracy !== undefined ? '/60' : ''}</span></span>
-                              <span><span className={styles.summaryLabel}>Schema Compliance:</span> <span className={styles.summaryValue}>{item.Evaluation?.category_scores?.schema_compliance ?? '-'}{item.Evaluation?.category_scores?.schema_compliance !== undefined ? '/15' : ''}</span></span>
+                              <span><span className={styles.summaryLabel}>Partial Match Penalty:</span> <span className={styles.summaryValue}>{item.performance_score?.partial_match ?? '-'}</span></span>
+                              <span><span className={styles.summaryLabel}>Invalid Mapping Penalty:</span> <span className={styles.summaryValue}>{item.performance_score?.invalid_mapping ?? '-'}</span></span>
+                              <span><span className={styles.summaryLabel}>Hallucination Penalty:</span> <span className={styles.summaryValue}>{item.performance_score?.hallucination ?? '-'}</span></span>
+                              <span><span className={styles.summaryLabel}>Missing Value Penalty:</span> <span className={styles.summaryValue}>{item.performance_score?.missing_value ?? '-'}</span></span>
                               <span><span className={styles.summaryLabel}>Score:</span> <span className={styles.summaryValue}>{item.Score ?? item.score ?? '-'}{(item.Score !== undefined || item.score !== undefined) ? '/100' : ''}</span></span>
                               <button
                                 className={styles.expandBtn}
