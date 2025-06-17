@@ -339,6 +339,7 @@ const PdfParent = () => {
           // Transform API 2 response array before storing in state
           const transformIteration = (item) => {
             const transformed = {
+              'Prompt Text': item.prompt_text, // Add prompt text at the top
               'Iteration': item.iteration,
               'Score': item.score,
               'Extracted Data': item.extracted_json,
@@ -385,10 +386,21 @@ const PdfParent = () => {
 
   function renderIterationTable(data, parentKey = '') {
     if (!data) return null;
+    // Ensure Prompt Text is always rendered on top if present
+    const entries = Object.entries(data);
+    const promptTextEntry = entries.find(([key]) => key === 'Prompt Text');
+    const otherEntries = entries.filter(([key]) => key !== 'Prompt Text');
     return (
       <table className={styles.resultTable}>
         <tbody>
-          {Object.entries(data).map(([key, value]) => {
+          {/* Render Prompt Text first if present */}
+          {promptTextEntry && (
+            <tr key={parentKey + 'Prompt Text'}>
+              <th>Prompt Text</th>
+              <td style={{ whiteSpace: 'pre-line', color: '#bfc7d5', fontWeight: 500 }}>{promptTextEntry[1]}</td>
+            </tr>
+          )}
+          {otherEntries.map(([key, value]) => {
             const cellKey = parentKey + key;
             const isLargeString = typeof value === 'string' && value.length > 60;
             const isLeaf = isLeafObject(value);

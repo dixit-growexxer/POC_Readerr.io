@@ -171,6 +171,8 @@ const renderFieldsCard = (title, fields) => (
 
 // Main component
 const SmartResultTable = ({ data, title }) => {
+  // State for prompt expand/collapse (must be at top level for React rules)
+  const [promptExpanded, setPromptExpanded] = React.useState(false);
   if (!data) return null;
 
   // Partition summary vs. nested fields
@@ -184,13 +186,100 @@ const SmartResultTable = ({ data, title }) => {
     }
   });
 
+  // Extract and remove Prompt Text if present
+  const promptText = summaryFields['Prompt Text'];
+  if ('Prompt Text' in summaryFields) {
+    delete summaryFields['Prompt Text'];
+  }
+  // Remove Iteration and Score from summaryFields for expanded details
+  if ('Iteration' in summaryFields) {
+    delete summaryFields['Iteration'];
+  }
+  if ('Score' in summaryFields) {
+    delete summaryFields['Score'];
+  }
+
+  // Helper to truncate prompt text
+  function getTruncatedPrompt(text) {
+    if (!text) return '';
+    const lines = text.split(/\r?\n/);
+    if (lines.length > 5) {
+      return lines.slice(0, 5).join('\n') + '...';
+    }
+    if (text.length > 200) {
+      return text.slice(0, 200) + '...';
+    }
+    return text;
+  }
+
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {title && <div style={{ ...sectionHeaderStyle, fontSize: '1.5rem', marginBottom: 24 }}>{pascalCase(title)}</div>}
+      {/* Render summary fields as a table if any remain */}
+      {Object.keys(summaryFields).length > 0 && (
+        <div style={{ width: '100%', maxWidth: 820, marginBottom: 18 }}>
+          <table className={styles.resultTable}>
+            <tbody>
+              {Object.entries(summaryFields).map(([key, value]) => (
+                <tr key={key}>
+                  <th style={{ ...tableHeaderStyle, ...cellStyle }}>{pascalCase(key)}</th>
+                  <td style={cellStyle}>{String(value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       {/* Only render cards for nested fields (no summary) */}
       {Object.entries(nestedFields).map(([key, value]) => (
         renderFieldsCard(key, value)
       ))}
+      {promptText && (
+        <div
+          style={{
+            background: '#232a47',
+            color: '#bfc7d5',
+            fontWeight: 600,
+            fontSize: '1.13rem',
+            marginTop: 22,
+            padding: '16px 22px',
+            borderRadius: 10,
+            width: '100%',
+            maxWidth: 820,
+            boxSizing: 'border-box',
+            whiteSpace: 'pre-line',
+            wordBreak: 'break-word',
+            overflowWrap: 'anywhere',
+            overflowX: 'auto',
+            boxShadow: '0 2px 12px rgba(60,140,231,0.10)',
+            border: '1.5px solid #3c8ce7',
+            letterSpacing: 0.01,
+          }}
+        >
+          <span style={{ color: '#7b5cff', fontWeight: 800, fontSize: '1.18rem', display: 'block', marginBottom: 8 }}>Prompt Text</span>
+          <span style={{whiteSpace: 'pre-line', wordBreak: 'break-word', overflowWrap: 'anywhere', display: 'block'}}>
+            {promptExpanded ? promptText : getTruncatedPrompt(promptText)}
+          </span>
+          {(promptText.length > 200 || promptText.split(/\r?\n/).length > 5) && (
+            <button
+              style={{
+                marginTop: 10,
+                background: 'none',
+                border: 'none',
+                color: '#7b5cff',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontSize: '1rem',
+                padding: 0,
+                textDecoration: 'underline',
+              }}
+              onClick={() => setPromptExpanded(v => !v)}
+            >
+              {promptExpanded ? 'Collapse' : 'Expand'}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
