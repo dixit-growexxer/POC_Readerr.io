@@ -323,6 +323,10 @@ const PdfParent = () => {
     setMaxIter('');
     setActiveTab('pdf'); // Ensure PDF tab is active after back
     setIterationData(null); // Reset iteration data on back
+    // Also reset the file input element
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   useEffect(() => {

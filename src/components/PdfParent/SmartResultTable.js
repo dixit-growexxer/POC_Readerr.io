@@ -19,10 +19,9 @@ const cardStyle = {
   padding: '20px 28px',
   marginBottom: 28,
   width: '100%',
-  maxWidth: 820,
   color: '#fff',
   boxSizing: 'border-box',
-  alignSelf: 'center',
+  alignSelf: 'stretch',
 };
 const tableScroll = {
   width: '100%',
@@ -114,63 +113,81 @@ const renderKeyValueTable = (obj, indent = 0) => {
 };
 
 // Renders a card for each top-level field
-const renderFieldsCard = (title, fields) => (
-  <div style={cardStyle}>
-    <div style={sectionHeaderStyle}>{pascalCase(title)}</div>
-    <div style={tableScroll}>
-      {Object.entries(fields).map(([key, value]) => (
-        <div key={pascalCase(key)} style={{ marginBottom: 18 }}>
-          <div
-            style={{
-              color: '#7b5cff',
-              fontFamily: 'inherit',
-              fontWeight: 800,
-              fontSize: '1.35rem',
-              margin: '30px 0 18px 0',
-              paddingBottom: '6px',
-              borderBottom: '2.5px solid #3c8ce7',
-              letterSpacing: '0.5px',
-              textTransform: 'capitalize',
-              boxShadow: 'none',
-              background: 'none',
-              borderRadius: 0,
-              display: 'block',
-            }}
-          >
-            {pascalCase(key)}
-          </div>
-          {Array.isArray(value) && value.length && typeof value[0] === 'object' ? (
-            <table className={styles.resultTable} style={tableStyleAuto}>
-              <thead>
-                <tr>
-                  {Object.keys(value[0]).map(col => (
-                    <th key={pascalCase(col)} style={tableHeaderStyle}>{pascalCase(col)}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {value.map((item, i) => (
-                  <tr key={i}>
+const renderFieldsCard = (title, fields) => {
+  // Custom order for Extracted Data card: Priority Fields, then Additional Fields, then others
+  console.log('fields',fields);
+  let orderedEntries = Object.entries(fields);
+  if (pascalCase(title) === 'Extracted Data') {
+    // Match keys case-insensitively
+    const priorityIdx = orderedEntries.findIndex(([key]) => key.toLowerCase() === 'priority_fields'.toLowerCase());
+    const additionalIdx = orderedEntries.findIndex(([key]) => key.toLowerCase() === 'additional_fields'.toLowerCase());
+    const priority = priorityIdx !== -1 ? orderedEntries[priorityIdx] : undefined;
+    const additional = additionalIdx !== -1 ? orderedEntries[additionalIdx] : undefined;
+    const rest = orderedEntries.filter(([_key], idx) => idx !== priorityIdx && idx !== additionalIdx);
+    orderedEntries = [];
+    if (priority) orderedEntries.push(priority);
+    if (additional) orderedEntries.push(additional);
+    orderedEntries = orderedEntries.concat(rest);
+  }
+  return (
+    <div style={cardStyle}>
+      <div style={sectionHeaderStyle}>{pascalCase(title)}</div>
+      <div style={tableScroll}>
+        {orderedEntries.map(([key, value]) => (
+          <div key={pascalCase(key)} style={{ marginBottom: 18 }}>
+            <div
+              style={{
+                color: '#7b5cff',
+                fontFamily: 'inherit',
+                fontWeight: 800,
+                fontSize: '1.35rem',
+                margin: '30px 0 18px 0',
+                paddingBottom: '6px',
+                borderBottom: '2.5px solid #3c8ce7',
+                letterSpacing: 0.5,
+                textTransform: 'capitalize',
+                boxShadow: 'none',
+                background: 'none',
+                borderRadius: 0,
+                display: 'block',
+              }}
+            >
+              {pascalCase(key)}
+            </div>
+            {Array.isArray(value) && value.length && typeof value[0] === 'object' ? (
+              <table className={styles.resultTable} style={tableStyleAuto}>
+                <thead>
+                  <tr>
                     {Object.keys(value[0]).map(col => (
-                      <td key={pascalCase(col)} style={cellStyle}>{item[col]}</td>
+                      <th key={pascalCase(col)} style={tableHeaderStyle}>{pascalCase(col)}</th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : typeof value === 'object' && value !== null ? (
-            renderKeyValueTable(value, 16)
-          ) : (
-            <div style={{ background: '#232a47', borderRadius: 6, padding: '4px 12px', color: '#fff', display: 'inline-block', minWidth: 80 }}>{String(value)}</div>
-          )}
-        </div>
-      ))}
+                </thead>
+                <tbody>
+                  {value.map((item, i) => (
+                    <tr key={i}>
+                      {Object.keys(value[0]).map(col => (
+                        <td key={pascalCase(col)} style={cellStyle}>{item[col]}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : typeof value === 'object' && value !== null ? (
+              renderKeyValueTable(value, 16)
+            ) : (
+              <div style={{ background: '#232a47', borderRadius: 6, padding: '4px 12px', color: '#fff', display: 'inline-block', minWidth: 80 }}>{String(value)}</div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // Main component
 const SmartResultTable = ({ data, title }) => {
+  console.log('data',data);
   // State for prompt expand/collapse (must be at top level for React rules)
   const [promptExpanded, setPromptExpanded] = React.useState(false);
   if (!data) return null;
