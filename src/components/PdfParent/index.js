@@ -99,11 +99,10 @@ const PdfParent = () => {
         formData.append('file', file);
         formData.append('threshold', threshold);
         formData.append('max_iterations', maxIter);
-        const res = await fetch('http://localhost:3001/upload_and_optimize'
-        //   , {
-        //   method: 'POST',
-        //   body: formData
-        // }
+        const res = await fetch('http://localhost:5000/upload_and_optimize', {
+          method: 'POST',
+          body: formData
+        }
       );
         apiResult = await res.json();
         setDocId(apiResult.doc_id || null); // Store doc_id for API 2
@@ -336,8 +335,8 @@ const PdfParent = () => {
       !iterationData // Only call if not already loaded
     ) {
       setIterationError(null);
-      // fetch(`http://localhost:5000/iterations/${docId}`)
-      fetch(`http://localhost:3001/iterations`)
+      fetch(`http://localhost:5000/iterations/${docId}`)
+      // fetch(`http://localhost:3001/iterations`)
         .then(res => res.json())
         .then(data => {
           // Transform API 2 response array before storing in state
@@ -395,7 +394,7 @@ const PdfParent = () => {
     // Ensure Prompt Text is always rendered on top if present
     const entries = Object.entries(data);
     const promptTextEntry = entries.find(([key]) => key === 'Prompt Text');
-    const otherEntries = entries.filter(([key]) => key !== 'Prompt Text');
+    const otherEntries = entries.filter(([key]) => key !== 'Prompt Text' && key !== 'performance_score');
     return (
       <table className={styles.resultTable}>
         <tbody>

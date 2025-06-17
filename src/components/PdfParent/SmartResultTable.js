@@ -197,6 +197,7 @@ const SmartResultTable = ({ data, title }) => {
   const nestedFields = {};
   Object.entries(data).forEach(([key, value]) => {
     if (key === 'total_present_fields') return; // Exclude from summary
+    if (key === 'performance_score') return; // Exclude from summary
     if (typeof value === 'object' && value !== null) {
       nestedFields[key] = value;
     } else {
