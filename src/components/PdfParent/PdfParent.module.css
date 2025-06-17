@@ -374,6 +374,7 @@
 .iterationTabSummary .summaryValue {
   color: #fff;
   font-weight: 700;
+  margin-left: 6px;
   margin-right: 16px;
 }
 
