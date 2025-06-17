@@ -131,7 +131,7 @@ const renderKeyValueTable = (obj, indent = 0) => (
                       <thead>
                         <tr>
                           {Object.keys(value[0]).map(col => (
-                            <th key={col} style={{ ...tableHeaderStyle, ...cellStyle }}>{col.replace(/_/g, ' ')}</th>
+                            <th key={col} style={cellStyle}>{col.replace(/_/g, ' ')}</th>
                           ))}
                         </tr>
                       </thead>
@@ -139,14 +139,18 @@ const renderKeyValueTable = (obj, indent = 0) => (
                         {value.map((item, i) => (
                           <tr key={i}>
                             {Object.keys(value[0]).map(col => (
-                              <td key={col} style={cellStyle}>{item[col]}</td>
+                              <td key={col} style={cellStyle}>{typeof item[col] === 'object' && item[col] !== null ? renderKeyValueTable(item[col], indent + 16) : String(item[col])}</td>
                             ))}
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   )
-                  : JSON.stringify(value))
+                  : value.length > 0
+                    ? value.map((item, i) => (
+                        <span key={i}>{typeof item === 'object' && item !== null ? renderKeyValueTable(item, indent + 16) : String(item)}{i !== value.length - 1 ? ', ' : ''}</span>
+                      ))
+                    : <span>[]</span>)
               : typeof value === 'object' && value !== null
                 ? renderKeyValueTable(value, indent + 16)
                 : String(value)

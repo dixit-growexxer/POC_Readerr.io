@@ -487,17 +487,8 @@
 .resultTable tr {
   transition: background 0.18s;
 }
-.resultTable tr:hover {
-  background: #2d3a5a;
-  color: #fff;
-}
-.resultTable tr:hover th {
-  background: #3c8ce7;
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(60,140,231,0.18);
-  border-radius: 6px 0 0 6px;
-  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
-}
+.resultTable tr:hover {}
+.resultTable tr:hover th {}
 .expandBtn {
   background: #232a47;
   color: #7b5cff;

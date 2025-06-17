@@ -41,46 +41,67 @@ const tableHeaderStyle = {
 };
 
 // Recursive key-value table renderer for nested objects/arrays
-const renderKeyValueTable = (obj, indent = 0) => (
-  <table className={styles.resultTable} style={{ width: 'auto', marginBottom: 0, marginLeft: indent }}>
-    <tbody>
-      {Object.entries(obj).map(([key, value]) => (
-        <tr key={key}>
-          <th style={{ ...tableHeaderStyle, ...cellStyle }}>{key.replace(/_/g, ' ')}</th>
-          <td style={cellStyle}>
-            {Array.isArray(value)
-              ? (value.length && typeof value[0] === 'object'
-                  ? (
-                    <table className={styles.resultTable} style={tableStyleAuto}>
-                      <thead>
-                        <tr>
-                          {Object.keys(value[0]).map(col => (
-                            <th key={col} style={tableHeaderStyle}>{col.replace(/_/g, ' ')}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {value.map((item, i) => (
-                          <tr key={i}>
-                            {Object.keys(value[0]).map(col => (
-                              <td key={col} style={cellStyle}>{item[col]}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )
-                  : JSON.stringify(value))
-              : typeof value === 'object' && value !== null
-                ? renderKeyValueTable(value, indent + 16)
-                : String(value)
-            }
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-);
+const renderKeyValueTable = (obj, indent = 0) => {
+  if (obj === null) return <span style={{ fontStyle: 'italic', color: '#bfc7d5' }}>null</span>;
+  if (Array.isArray(obj)) {
+    if (obj.length === 0) return <span style={{ fontStyle: 'italic', color: '#bfc7d5' }}>[]</span>;
+    if (typeof obj[0] === 'object' && obj[0] !== null && !Array.isArray(obj[0])) {
+      // Array of objects: render as sub-table
+      const columns = Array.from(new Set(obj.flatMap(item => item && typeof item === 'object' ? Object.keys(item) : [])));
+      return (
+        <table className={styles.resultTable} style={tableStyleAuto}>
+          <thead>
+            <tr>
+              {columns.map(col => (
+                <th key={col} style={tableHeaderStyle}>{col.replace(/_/g, ' ')}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {obj.map((item, i) => (
+              <tr key={i}>
+                {columns.map(col => (
+                  <td key={col} style={cellStyle}>
+                    {typeof item?.[col] === 'object' && item?.[col] !== null
+                      ? renderKeyValueTable(item[col], indent + 16)
+                      : String(item?.[col] ?? '')}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      );
+    } else {
+      // Array of primitives or mixed
+      return obj.map((item, i) => (
+        <span key={i}>
+          {typeof item === 'object' && item !== null
+            ? renderKeyValueTable(item, indent + 16)
+            : String(item)}
+          {i !== obj.length - 1 ? ', ' : ''}
+        </span>
+      ));
+    }
+  }
+  if (typeof obj === 'object') {
+    if (Object.keys(obj).length === 0) return <span style={{ fontStyle: 'italic', color: '#bfc7d5' }}>{'{}'}</span>;
+    return (
+      <table className={styles.resultTable} style={{ width: 'auto', marginBottom: 0, marginLeft: indent }}>
+        <tbody>
+          {Object.entries(obj).map(([key, value]) => (
+            <tr key={key}>
+              <th style={{ ...tableHeaderStyle, ...cellStyle }}>{key.replace(/_/g, ' ')}</th>
+              <td style={cellStyle}>{renderKeyValueTable(value, indent + 16)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+  // Primitive
+  return <span>{String(obj)}</span>;
+};
 
 // Renders a card for each top-level field
 const renderFieldsCard = (title, fields) => (
