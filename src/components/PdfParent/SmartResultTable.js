@@ -113,7 +113,7 @@ const renderKeyValueTable = (obj, indent = 0) => {
 };
 
 // Renders a card for each top-level field
-const renderFieldsCard = (title, fields) => {
+export const RenderFieldsCard = ({ title, fields }) => {
   // Custom order for Extracted Data card: Priority Fields, then Additional Fields, then others
   console.log('fields',fields);
   let orderedEntries = Object.entries(fields);
@@ -129,10 +129,26 @@ const renderFieldsCard = (title, fields) => {
     if (additional) orderedEntries.push(additional);
     orderedEntries = orderedEntries.concat(rest);
   }
+
+  const cardRef = React.useRef();
+  React.useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const handler = e => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        el.scrollLeft += e.deltaY;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
+  }, []);
+
   return (
     <div style={cardStyle}>
       <div style={sectionHeaderStyle}>{pascalCase(title)}</div>
-      <div style={tableScroll}>
+      <div ref={cardRef} style={tableScroll} tabIndex={0}>
         {orderedEntries.map(([key, value]) => (
           <div key={pascalCase(key)} style={{ marginBottom: 18 }}>
             <div
@@ -251,7 +267,7 @@ const SmartResultTable = ({ data, title }) => {
       )}
       {/* Only render cards for nested fields (no summary) */}
       {Object.entries(nestedFields).map(([key, value]) => (
-        renderFieldsCard(key, value)
+        <RenderFieldsCard key={key} title={key} fields={value} />
       ))}
       {promptText && (
         <div

@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./PdfParent.module.css";
+import { RenderFieldsCard } from "./SmartResultTable";
 
 // Helper to convert snake_case or space separated to PascalCase
 function pascalCase(str) {
@@ -251,7 +252,7 @@ const UploadResultTable = ({ resultData }) => {
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {Object.keys(summaryFields).length > 0 && renderSummary(summaryFields)}
       {nestedFields['Priority Fields'] && renderFieldsCard('Priority Fields', nestedFields['Priority Fields'])}
-      {nestedFields['Extracted Data'] && renderFieldsCard('Extracted Data', nestedFields['Extracted Data'])}
+      {nestedFields['Extracted Data'] && <RenderFieldsCard title="Extracted Data" fields={nestedFields['Extracted Data']} />}
       {nestedFields['Additional Fields'] && renderFieldsCard('Additional Fields', nestedFields['Additional Fields'])}
       {/* Fallback: render any other nested fields */}
       {Object.entries(nestedFields).map(([key, value]) => (
